@@ -890,6 +890,7 @@ def validate_linkedin_url(url_value):
     """
     Validate and format a LinkedIn URL
     Returns a properly formatted URL or empty string if invalid
+    Only accepts valid LinkedIn profile URLs with proper usernames
     """
     if not url_value or url_value == "NULL" or url_value.strip() == "":
         return ""
@@ -899,29 +900,63 @@ def validate_linkedin_url(url_value):
     # Clean up the input
     url = url_value.strip()
     
-    # Check for common valid LinkedIn URL patterns
-    linkedin_patterns = [
-        r'^https?://(?:www\.)?linkedin\.com/in/[\w\-\.%]+/?$',  # Standard profile URL
-        r'^https?://(?:www\.)?linkedin\.com/pub/[\w\-\.%/]+$',  # Public profile URL
-        r'^https?://(?:www\.)?linkedin\.com/profile/[\w\-\.%]+$',  # Other profile format
-        r'^http?://(?:www\.)?linkedin\.com/company/[\w\-\.%]+/?$'  # Company profile
+    # If the URL is a generic LinkedIn URL without a specific profile, reject it
+    generic_linkedin_patterns = [
+        r'^https?://(?:www\.)?linkedin\.com/?$',  # LinkedIn homepage
+        r'^https?://(?:www\.)?linkedin\.com/in/?$',  # Generic /in/ URL
+        r'^https?://(?:www\.)?linkedin\.com/pub/?$',  # Generic /pub/ URL
+        r'^https?://(?:www\.)?linkedin\.com/profile/?$',  # Generic /profile/ URL
+        r'^https?://(?:www\.)?linkedin\.com/company/?$',  # Generic /company/ URL
+        r'^https?://(?:www\.)?linkedin\.com/in/linkedin/?$',  # Specific invalid case
+        r'^https?://(?:www\.)?linkedin\.com/in/profile/?$',  # Generic profiles
+        r'^https?://(?:www\.)?linkedin\.com/in/user/?$',  # Generic profiles
+        r'^linkedin$',  # Just the word
+        r'^linkedin\.com$'  # Just domain
     ]
     
-    # Test the URL against patterns
-    for pattern in linkedin_patterns:
+    # Reject generic LinkedIn URLs
+    for pattern in generic_linkedin_patterns:
         if re.match(pattern, url):
+            logging.warning(f"Generic LinkedIn URL rejected: '{url_value}'")
+            return ""
+    
+    # Extract username for validation
+    username_match = re.search(r'linkedin\.com/in/([\w\-\.%]+)', url)
+    if username_match:
+        username = username_match.group(1)
+        
+        # Reject usernames that are too short (likely generic) or contain generic terms
+        if len(username) < 4 or username.lower() in ['user', 'profile', 'linkedin', 'my', 'page', 'me']:
+            logging.warning(f"LinkedIn URL with generic username rejected: '{url_value}'")
+            return ""
+            
+        # Format to standardized URL
+        return f"https://www.linkedin.com/in/{username}"
+    
+    # Check for other valid LinkedIn URL patterns
+    linkedin_patterns = [
+        r'^https?://(?:www\.)?linkedin\.com/pub/([\w\-\.%/]+)$',  # Public profile URL
+        r'^https?://(?:www\.)?linkedin\.com/profile/([\w\-\.%]+)$',  # Other profile format
+        r'^https?://(?:www\.)?linkedin\.com/company/([\w\-\.%]+)/?$'  # Company profile
+    ]
+    
+    # Test the URL against other valid patterns
+    for pattern in linkedin_patterns:
+        match = re.match(pattern, url)
+        if match:
+            # Extract the identifier and ensure it's not generic
+            identifier = match.group(1)
+            if len(identifier) < 4 or identifier.lower() in ['user', 'profile', 'linkedin', 'my', 'page', 'me']:
+                logging.warning(f"LinkedIn URL with generic identifier rejected: '{url_value}'")
+                return ""
             return url
     
-    # If the URL doesn't match patterns but contains linkedin.com, try to format it
-    if 'linkedin.com' in url.lower():
-        # Extract username if found 
-        username_match = re.search(r'linkedin\.com/in/([\w\-\.%]+)', url)
-        if username_match:
-            username = username_match.group(1)
-            return f"https://www.linkedin.com/in/{username}"
-    
-    # If it's just a username (handle), convert to proper URL
+    # If it's just a username (handle), convert to proper URL if it's valid
     if re.match(r'^[\w\-\.%]+$', url) and not url.startswith('http') and not '/' in url and not ' ' in url:
+        # Validate the username
+        if len(url) < 4 or url.lower() in ['user', 'profile', 'linkedin', 'my', 'page', 'me']:
+            logging.warning(f"Generic LinkedIn username rejected: '{url_value}'")
+            return ""
         return f"https://www.linkedin.com/in/{url}"
     
     # If we can't validate or fix it, return empty string
@@ -992,6 +1027,96 @@ def validate_date_format(date_value):
     # If we get here, we couldn't parse the date
     logging.warning(f"Could not parse date value: '{date_value}'")
     return None
+
+def prepare_update_data(enhanced_results, step1_results=None, skills_list=None):
+    """Prepare update data dictionary, safely accessing fields with .get() method"""
+    # Prepare skills list if provided
+    if skills_list is None:
+        skills_list = ["" for _ in range(10)]
+    Skill1, Skill2, Skill3, Skill4, Skill5, Skill6, Skill7, Skill8, Skill9, Skill10 = skills_list[:10]
+    
+    # Create safe update data dictionary - use .get() for all fields
+    return {
+        "PrimaryTitle": enhanced_results.get("PrimaryTitle", "") or (step1_results.get("PrimaryTitle", "") if step1_results else ""),
+        "SecondaryTitle": enhanced_results.get("SecondaryTitle", "") or (step1_results.get("SecondaryTitle", "") if step1_results else ""),
+        "TertiaryTitle": enhanced_results.get("TertiaryTitle", "") or (step1_results.get("TertiaryTitle", "") if step1_results else ""),
+        "Address": enhanced_results.get("Address", ""),
+        "City": enhanced_results.get("City", ""),
+        "State": enhanced_results.get("State", ""),
+        "ZipCode": enhanced_results.get("ZipCode", ""),
+        "Certifications": enhanced_results.get("Certifications", ""),
+        "Bachelors": enhanced_results.get("Bachelors", ""),
+        "Masters": enhanced_results.get("Masters", ""),
+        "Phone1": enhanced_results.get("Phone1", ""),
+        "Phone2": enhanced_results.get("Phone2", ""),
+        "Email": enhanced_results.get("Email", ""),
+        "Email2": enhanced_results.get("Email2", ""),
+        "FirstName": enhanced_results.get("FirstName", ""),
+        "MiddleName": enhanced_results.get("MiddleName", ""),
+        "LastName": enhanced_results.get("LastName", ""),
+        "Linkedin": enhanced_results.get("Linkedin", ""),
+        "MostRecentCompany": enhanced_results.get("MostRecentCompany", ""),
+        "MostRecentStartDate": enhanced_results.get("MostRecentStartDate", ""),
+        "MostRecentEndDate": enhanced_results.get("MostRecentEndDate", ""),
+        "MostRecentLocation": enhanced_results.get("MostRecentLocation", ""),
+        "SecondMostRecentCompany": enhanced_results.get("SecondMostRecentCompany", ""),
+        "SecondMostRecentStartDate": enhanced_results.get("SecondMostRecentStartDate", ""),
+        "SecondMostRecentEndDate": enhanced_results.get("SecondMostRecentEndDate", ""),
+        "SecondMostRecentLocation": enhanced_results.get("SecondMostRecentLocation", ""),
+        "ThirdMostRecentCompany": enhanced_results.get("ThirdMostRecentCompany", ""),
+        "ThirdMostRecentStartDate": enhanced_results.get("ThirdMostRecentStartDate", ""),
+        "ThirdMostRecentEndDate": enhanced_results.get("ThirdMostRecentEndDate", ""),
+        "ThirdMostRecentLocation": enhanced_results.get("ThirdMostRecentLocation", ""),
+        "FourthMostRecentCompany": enhanced_results.get("FourthMostRecentCompany", ""),
+        "FourthMostRecentStartDate": enhanced_results.get("FourthMostRecentStartDate", ""),
+        "FourthMostRecentEndDate": enhanced_results.get("FourthMostRecentEndDate", ""),
+        "FourthMostRecentLocation": enhanced_results.get("FourthMostRecentLocation", ""),
+        "FifthMostRecentCompany": enhanced_results.get("FifthMostRecentCompany", ""),
+        "FifthMostRecentStartDate": enhanced_results.get("FifthMostRecentStartDate", ""),
+        "FifthMostRecentEndDate": enhanced_results.get("FifthMostRecentEndDate", ""),
+        "FifthMostRecentLocation": enhanced_results.get("FifthMostRecentLocation", ""),
+        "SixthMostRecentCompany": enhanced_results.get("SixthMostRecentCompany", ""),
+        "SixthMostRecentStartDate": enhanced_results.get("SixthMostRecentStartDate", ""),
+        "SixthMostRecentEndDate": enhanced_results.get("SixthMostRecentEndDate", ""),
+        "SixthMostRecentLocation": enhanced_results.get("SixthMostRecentLocation", ""),
+        "SeventhMostRecentCompany": enhanced_results.get("SeventhMostRecentCompany", ""),
+        "SeventhMostRecentStartDate": enhanced_results.get("SeventhMostRecentStartDate", ""),
+        "SeventhMostRecentEndDate": enhanced_results.get("SeventhMostRecentEndDate", ""),
+        "SeventhMostRecentLocation": enhanced_results.get("SeventhMostRecentLocation", ""),
+        "PrimaryIndustry": enhanced_results.get("PrimaryIndustry", ""),
+        "SecondaryIndustry": enhanced_results.get("SecondaryIndustry", ""),
+        "Skill1": Skill1,
+        "Skill2": Skill2,
+        "Skill3": Skill3,
+        "Skill4": Skill4,
+        "Skill5": Skill5,
+        "Skill6": Skill6,
+        "Skill7": Skill7,
+        "Skill8": Skill8,
+        "Skill9": Skill9,
+        "Skill10": Skill10,
+        "PrimarySoftwareLanguage": enhanced_results.get("PrimarySoftwareLanguage", ""),
+        "SecondarySoftwareLanguage": enhanced_results.get("SecondarySoftwareLanguage", ""),
+        "TertiarySoftwareLanguage": enhanced_results.get("TertiarySoftwareLanguage", ""),
+        "SoftwareApp1": enhanced_results.get("SoftwareApp1", ""),
+        "SoftwareApp2": enhanced_results.get("SoftwareApp2", ""),
+        "SoftwareApp3": enhanced_results.get("SoftwareApp3", ""),
+        "SoftwareApp4": enhanced_results.get("SoftwareApp4", ""),
+        "SoftwareApp5": enhanced_results.get("SoftwareApp5", ""),
+        "Hardware1": enhanced_results.get("Hardware1", ""),
+        "Hardware2": enhanced_results.get("Hardware2", ""),
+        "Hardware3": enhanced_results.get("Hardware3", ""),
+        "Hardware4": enhanced_results.get("Hardware4", ""),
+        "Hardware5": enhanced_results.get("Hardware5", ""),
+        "PrimaryCategory": enhanced_results.get("PrimaryCategory", ""),
+        "SecondaryCategory": enhanced_results.get("SecondaryCategory", ""),
+        "ProjectTypes": enhanced_results.get("ProjectTypes", ""),
+        "Specialty": enhanced_results.get("Specialty", ""),
+        "Summary": enhanced_results.get("Summary", ""),
+        "LengthinUS": enhanced_results.get("LengthinUS", ""),
+        "YearsofExperience": enhanced_results.get("YearsofExperience", ""),
+        "AvgTenure": enhanced_results.get("AvgTenure", "")
+    }
 
 def process_single_resume_two_step(resume_data):
     """Process a single resume using two API calls with taxonomy enhancement"""
@@ -1133,106 +1258,37 @@ def process_single_resume_two_step(resume_data):
         skills_list.extend([""] * (10 - len(skills_list)))  # Ensure we have 10 skills
         Skill1, Skill2, Skill3, Skill4, Skill5, Skill6, Skill7, Skill8, Skill9, Skill10 = skills_list[:10]
         
-        # Clean up phone numbers - prevent duplicates
+        # Clean up phone numbers - prevent duplicates and normalize format
         phone1 = enhanced_results.get("Phone1", "")
         phone2 = enhanced_results.get("Phone2", "")
         
-        # If Phone1 and Phone2 are the same, clear Phone2
-        if phone1 and phone2 and phone1 == phone2:
-            logging.info(f"UserID {userid}: Removing duplicate phone number from Phone2 (same as Phone1)")
-            enhanced_results["Phone2"] = ""
+        # Normalize phone numbers by removing all non-digit characters for comparison
+        def normalize_phone(phone):
+            import re
+            if not phone or phone == "NULL":
+                return ""
+            # Extract only digits
+            digits = re.sub(r'\D', '', phone)
+            # If we have a reasonable number of digits for a phone number
+            if 7 <= len(digits) <= 15:
+                return digits
+            return phone
+            
+        normalized_phone1 = normalize_phone(phone1)
+        normalized_phone2 = normalize_phone(phone2)
         
-        # Clean up phone numbers - prevent duplicates
-        phone1 = enhanced_results.get("Phone1", "")
-        phone2 = enhanced_results.get("Phone2", "")
-        
-        # If Phone1 and Phone2 are the same, clear Phone2
-        if phone1 and phone2 and phone1 == phone2:
-            logging.info(f"UserID {userid}: Removing duplicate phone number from Phone2 (same as Phone1)")
+        # If Phone1 and Phone2 have the same digits (even if formatted differently) or Phone2 is NULL, clear Phone2
+        if (normalized_phone1 and normalized_phone2 and normalized_phone1 == normalized_phone2) or phone2 == "NULL":
+            if phone1 == phone2:
+                logging.info(f"UserID {userid}: Removing duplicate phone number from Phone2 (same as Phone1)")
+            elif normalized_phone1 == normalized_phone2:
+                logging.info(f"UserID {userid}: Removing differently formatted duplicate phone number from Phone2: '{phone2}' (same as Phone1: '{phone1}')")
+            else:
+                logging.info(f"UserID {userid}: Removing NULL phone number from Phone2")
             enhanced_results["Phone2"] = ""
             
-        # Create a dictionary with all the data for database update
-        update_data = {
-            "PrimaryTitle": enhanced_results.get("PrimaryTitle") or step1_results.get("PrimaryTitle") or "",
-            "SecondaryTitle": enhanced_results.get("SecondaryTitle") or step1_results.get("SecondaryTitle") or "",
-            "TertiaryTitle": enhanced_results.get("TertiaryTitle") or step1_results.get("TertiaryTitle") or "",
-            "Address": enhanced_results["Address"],
-            "City": enhanced_results["City"],
-            "State": enhanced_results["State"],
-            "ZipCode": enhanced_results["ZipCode"],
-            "Certifications": enhanced_results["Certifications"],
-            "Bachelors": enhanced_results["Bachelors"],
-            "Masters": enhanced_results["Masters"],
-            "Phone1": enhanced_results["Phone1"],
-            "Phone2": enhanced_results["Phone2"],
-            "Email": enhanced_results["Email"],
-            "Email2": enhanced_results["Email2"],
-            "FirstName": enhanced_results["FirstName"],
-            "MiddleName": enhanced_results["MiddleName"],
-            "LastName": enhanced_results["LastName"],
-            "Linkedin": enhanced_results["Linkedin"],
-            "MostRecentCompany": enhanced_results["MostRecentCompany"],
-            "MostRecentStartDate": enhanced_results["MostRecentStartDate"],
-            "MostRecentEndDate": enhanced_results["MostRecentEndDate"],
-            "MostRecentLocation": enhanced_results["MostRecentLocation"],
-            "SecondMostRecentCompany": enhanced_results["SecondMostRecentCompany"],
-            "SecondMostRecentStartDate": enhanced_results["SecondMostRecentStartDate"],
-            "SecondMostRecentEndDate": enhanced_results["SecondMostRecentEndDate"],
-            "SecondMostRecentLocation": enhanced_results["SecondMostRecentLocation"],
-            "ThirdMostRecentCompany": enhanced_results["ThirdMostRecentCompany"],
-            "ThirdMostRecentStartDate": enhanced_results["ThirdMostRecentStartDate"],
-            "ThirdMostRecentEndDate": enhanced_results["ThirdMostRecentEndDate"],
-            "ThirdMostRecentLocation": enhanced_results["ThirdMostRecentLocation"],
-            "FourthMostRecentCompany": enhanced_results["FourthMostRecentCompany"],
-            "FourthMostRecentStartDate": enhanced_results["FourthMostRecentStartDate"],
-            "FourthMostRecentEndDate": enhanced_results["FourthMostRecentEndDate"],
-            "FourthMostRecentLocation": enhanced_results["FourthMostRecentLocation"],
-            "FifthMostRecentCompany": enhanced_results["FifthMostRecentCompany"],
-            "FifthMostRecentStartDate": enhanced_results["FifthMostRecentStartDate"],
-            "FifthMostRecentEndDate": enhanced_results["FifthMostRecentEndDate"],
-            "FifthMostRecentLocation": enhanced_results["FifthMostRecentLocation"],
-            "SixthMostRecentCompany": enhanced_results["SixthMostRecentCompany"],
-            "SixthMostRecentStartDate": enhanced_results["SixthMostRecentStartDate"],
-            "SixthMostRecentEndDate": enhanced_results["SixthMostRecentEndDate"],
-            "SixthMostRecentLocation": enhanced_results["SixthMostRecentLocation"],
-            "SeventhMostRecentCompany": enhanced_results["SeventhMostRecentCompany"],
-            "SeventhMostRecentStartDate": enhanced_results["SeventhMostRecentStartDate"],
-            "SeventhMostRecentEndDate": enhanced_results["SeventhMostRecentEndDate"],
-            "SeventhMostRecentLocation": enhanced_results["SeventhMostRecentLocation"],
-            "PrimaryIndustry": enhanced_results["PrimaryIndustry"],
-            "SecondaryIndustry": enhanced_results["SecondaryIndustry"],
-            "Skill1": Skill1,
-            "Skill2": Skill2,
-            "Skill3": Skill3,
-            "Skill4": Skill4,
-            "Skill5": Skill5,
-            "Skill6": Skill6,
-            "Skill7": Skill7,
-            "Skill8": Skill8,
-            "Skill9": Skill9,
-            "Skill10": Skill10,
-            "PrimarySoftwareLanguage": enhanced_results["PrimarySoftwareLanguage"],
-            "SecondarySoftwareLanguage": enhanced_results["SecondarySoftwareLanguage"],
-            "TertiarySoftwareLanguage": enhanced_results["TertiarySoftwareLanguage"],
-            "SoftwareApp1": enhanced_results["SoftwareApp1"],
-            "SoftwareApp2": enhanced_results["SoftwareApp2"],
-            "SoftwareApp3": enhanced_results["SoftwareApp3"],
-            "SoftwareApp4": enhanced_results["SoftwareApp4"],
-            "SoftwareApp5": enhanced_results["SoftwareApp5"],
-            "Hardware1": enhanced_results["Hardware1"],
-            "Hardware2": enhanced_results["Hardware2"],
-            "Hardware3": enhanced_results["Hardware3"],
-            "Hardware4": enhanced_results["Hardware4"],
-            "Hardware5": enhanced_results["Hardware5"],
-            "PrimaryCategory": enhanced_results["PrimaryCategory"],
-            "SecondaryCategory": enhanced_results["SecondaryCategory"],
-            "ProjectTypes": enhanced_results["ProjectTypes"],
-            "Specialty": enhanced_results["Specialty"],
-            "Summary": enhanced_results["Summary"],
-            "LengthinUS": enhanced_results["LengthinUS"],
-            "YearsofExperience": enhanced_results["YearsofExperience"],
-            "AvgTenure": enhanced_results["AvgTenure"]
-        }
+        # Create a dictionary with all the data for database update using the helper function
+        update_data = prepare_update_data(enhanced_results, step1_results, skills_list)
         
         # Replace "NULL" strings with empty string for database and clean whitespace
         # Also validate and format date fields
@@ -1446,97 +1502,37 @@ def process_batch_with_shared_prompts(resume_batch):
                         skills_list.extend([""] * (10 - len(skills_list)))  # Ensure we have 10 skills
                         Skill1, Skill2, Skill3, Skill4, Skill5, Skill6, Skill7, Skill8, Skill9, Skill10 = skills_list[:10]
                         
-                        # Clean up phone numbers - prevent duplicates
+                        # Clean up phone numbers - prevent duplicates and normalize format
                         phone1 = enhanced_results.get("Phone1", "")
                         phone2 = enhanced_results.get("Phone2", "")
                         
-                        # If Phone1 and Phone2 are the same, clear Phone2
-                        if phone1 and phone2 and phone1 == phone2:
-                            logging.info(f"UserID {userid}: Removing duplicate phone number from Phone2 (same as Phone1)")
+                        # Normalize phone numbers by removing all non-digit characters for comparison
+                        def normalize_phone(phone):
+                            import re
+                            if not phone or phone == "NULL":
+                                return ""
+                            # Extract only digits
+                            digits = re.sub(r'\D', '', phone)
+                            # If we have a reasonable number of digits for a phone number
+                            if 7 <= len(digits) <= 15:
+                                return digits
+                            return phone
+                            
+                        normalized_phone1 = normalize_phone(phone1)
+                        normalized_phone2 = normalize_phone(phone2)
+                        
+                        # If Phone1 and Phone2 have the same digits (even if formatted differently) or Phone2 is NULL, clear Phone2
+                        if (normalized_phone1 and normalized_phone2 and normalized_phone1 == normalized_phone2) or phone2 == "NULL":
+                            if phone1 == phone2:
+                                logging.info(f"UserID {userid}: Removing duplicate phone number from Phone2 (same as Phone1)")
+                            elif normalized_phone1 == normalized_phone2:
+                                logging.info(f"UserID {userid}: Removing differently formatted duplicate phone number from Phone2: '{phone2}' (same as Phone1: '{phone1}')")
+                            else:
+                                logging.info(f"UserID {userid}: Removing NULL phone number from Phone2")
                             enhanced_results["Phone2"] = ""
                         
                         # Create update data dictionary with fixed field values
-                        update_data = {
-                            "PrimaryTitle": enhanced_results.get("PrimaryTitle") or step1_result.get("PrimaryTitle") or "",
-                            "SecondaryTitle": enhanced_results.get("SecondaryTitle") or step1_result.get("SecondaryTitle") or "",
-                            "TertiaryTitle": enhanced_results.get("TertiaryTitle") or step1_result.get("TertiaryTitle") or "",
-                            "Address": enhanced_results["Address"],
-                            "City": enhanced_results["City"],
-                            "State": enhanced_results["State"],
-                            "ZipCode": enhanced_results["ZipCode"],
-                            "Certifications": enhanced_results["Certifications"],
-                            "Bachelors": enhanced_results["Bachelors"],
-                            "Masters": enhanced_results["Masters"],
-                            "Phone1": enhanced_results["Phone1"],
-                            "Phone2": enhanced_results["Phone2"],
-                            "Email": enhanced_results["Email"],
-                            "Email2": enhanced_results["Email2"],
-                            "FirstName": enhanced_results["FirstName"],
-                            "MiddleName": enhanced_results["MiddleName"],
-                            "LastName": enhanced_results["LastName"],
-                            "Linkedin": enhanced_results["Linkedin"],
-                            "MostRecentCompany": enhanced_results["MostRecentCompany"],
-                            "MostRecentStartDate": enhanced_results["MostRecentStartDate"],
-                            "MostRecentEndDate": enhanced_results["MostRecentEndDate"],
-                            "MostRecentLocation": enhanced_results["MostRecentLocation"],
-                            "SecondMostRecentCompany": enhanced_results["SecondMostRecentCompany"],
-                            "SecondMostRecentStartDate": enhanced_results["SecondMostRecentStartDate"],
-                            "SecondMostRecentEndDate": enhanced_results["SecondMostRecentEndDate"],
-                            "SecondMostRecentLocation": enhanced_results["SecondMostRecentLocation"],
-                            "ThirdMostRecentCompany": enhanced_results["ThirdMostRecentCompany"],
-                            "ThirdMostRecentStartDate": enhanced_results["ThirdMostRecentStartDate"],
-                            "ThirdMostRecentEndDate": enhanced_results["ThirdMostRecentEndDate"],
-                            "ThirdMostRecentLocation": enhanced_results["ThirdMostRecentLocation"],
-                            "FourthMostRecentCompany": enhanced_results["FourthMostRecentCompany"],
-                            "FourthMostRecentStartDate": enhanced_results["FourthMostRecentStartDate"],
-                            "FourthMostRecentEndDate": enhanced_results["FourthMostRecentEndDate"],
-                            "FourthMostRecentLocation": enhanced_results["FourthMostRecentLocation"],
-                            "FifthMostRecentCompany": enhanced_results["FifthMostRecentCompany"],
-                            "FifthMostRecentStartDate": enhanced_results["FifthMostRecentStartDate"],
-                            "FifthMostRecentEndDate": enhanced_results["FifthMostRecentEndDate"],
-                            "FifthMostRecentLocation": enhanced_results["FifthMostRecentLocation"],
-                            "SixthMostRecentCompany": enhanced_results["SixthMostRecentCompany"],
-                            "SixthMostRecentStartDate": enhanced_results["SixthMostRecentStartDate"],
-                            "SixthMostRecentEndDate": enhanced_results["SixthMostRecentEndDate"],
-                            "SixthMostRecentLocation": enhanced_results["SixthMostRecentLocation"],
-                            "SeventhMostRecentCompany": enhanced_results["SeventhMostRecentCompany"],
-                            "SeventhMostRecentStartDate": enhanced_results["SeventhMostRecentStartDate"],
-                            "SeventhMostRecentEndDate": enhanced_results["SeventhMostRecentEndDate"],
-                            "SeventhMostRecentLocation": enhanced_results["SeventhMostRecentLocation"],
-                            "PrimaryIndustry": enhanced_results["PrimaryIndustry"],
-                            "SecondaryIndustry": enhanced_results["SecondaryIndustry"],
-                            "Skill1": Skill1,
-                            "Skill2": Skill2,
-                            "Skill3": Skill3,
-                            "Skill4": Skill4,
-                            "Skill5": Skill5,
-                            "Skill6": Skill6,
-                            "Skill7": Skill7,
-                            "Skill8": Skill8,
-                            "Skill9": Skill9,
-                            "Skill10": Skill10,
-                            "PrimarySoftwareLanguage": enhanced_results["PrimarySoftwareLanguage"],
-                            "SecondarySoftwareLanguage": enhanced_results["SecondarySoftwareLanguage"],
-                            "TertiarySoftwareLanguage": enhanced_results["TertiarySoftwareLanguage"],
-                            "SoftwareApp1": enhanced_results["SoftwareApp1"],
-                            "SoftwareApp2": enhanced_results["SoftwareApp2"],
-                            "SoftwareApp3": enhanced_results["SoftwareApp3"],
-                            "SoftwareApp4": enhanced_results["SoftwareApp4"],
-                            "SoftwareApp5": enhanced_results["SoftwareApp5"],
-                            "Hardware1": enhanced_results["Hardware1"],
-                            "Hardware2": enhanced_results["Hardware2"],
-                            "Hardware3": enhanced_results["Hardware3"],
-                            "Hardware4": enhanced_results["Hardware4"],
-                            "Hardware5": enhanced_results["Hardware5"],
-                            "PrimaryCategory": enhanced_results["PrimaryCategory"],
-                            "SecondaryCategory": enhanced_results["SecondaryCategory"],
-                            "ProjectTypes": enhanced_results["ProjectTypes"],
-                            "Specialty": enhanced_results["Specialty"],
-                            "Summary": enhanced_results["Summary"],
-                            "LengthinUS": enhanced_results["LengthinUS"],
-                            "YearsofExperience": enhanced_results["YearsofExperience"],
-                            "AvgTenure": enhanced_results["AvgTenure"]
-                        }
+                        update_data = prepare_update_data(enhanced_results, step1_result, skills_list)
                         
                         # Update database
                         update_success = update_candidate_record_with_retry(userid, update_data)

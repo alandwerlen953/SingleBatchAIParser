@@ -34,7 +34,7 @@ def create_step1_prompt(resume_text, userid=None):
                        "is already on the resume is completely fine.\n"
                        "If you can't find an answer or it's not provided/listed, just put NULL. \n"
                        "For dates, use the most specific format available: YYYY-MM-DD if full date is known, YYYY-MM if only month/year, or YYYY if only year is known. For current positions, use 'Present' as the end date. If a date is completely unknown, output NULL.\n"
-                       "When identifying phone numbers, never put the same phone number in both Phone1 and Phone2 fields. If you only find one phone number, put it in Phone1 and leave Phone2 as NULL.\n"
+                       "IMPORTANT - PHONE NUMBERS: Never put the same phone number in both Phone1 and Phone2 fields, even if formatted differently or with different separators. If you only find one phone number, put it in Phone1 and set Phone2 to NULL. Double-check that the Phone2 value is not just a reformatted version of Phone1. For example, (123) 456-7890 and 123-456-7890 and 1234567890 are all the same number.\n"
                        "When identifying skills, prioritize accuracy over standardization. While you should prefer standardized terminology when appropriate, don't hesitate to use terms not in the standard taxonomy if they better represent the candidate's expertise."
         },
         {

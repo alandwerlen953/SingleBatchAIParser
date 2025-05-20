@@ -317,6 +317,24 @@ def diagnose_database_fields(userid, parsed_data):
 
 def update_candidate_record_with_retry(userid, parsed_data, max_retries=3):
     """Update the aicandidate table with parsed resume data with deadlock retry"""
+    # Safety check: Make sure parsed_data has expected fields
+    try:
+        # Ensure all keys in parsed_data are strings
+        for key in list(parsed_data.keys()):
+            if not isinstance(key, str):
+                logging.warning(f"[DB] Non-string key found in parsed_data: {key} ({type(key).__name__}). Converting to string.")
+                value = parsed_data[key]
+                del parsed_data[key]
+                parsed_data[str(key)] = value
+                
+        # Fix field names to match database columns
+        if "ZipCode" in parsed_data and "Zipcode" not in parsed_data:
+            logging.info(f"[DB] Converting ZipCode to Zipcode to match database column name")
+            parsed_data["Zipcode"] = parsed_data["ZipCode"]
+            del parsed_data["ZipCode"]
+    except Exception as e:
+        logging.error(f"[DB] Error preprocessing parsed_data for UserID {userid}: {str(e)}")
+        # Continue anyway, we've done our best to clean the data
     server_ip = '172.19.115.25'
     database = 'BH_Mirror'
     username = 'silver'

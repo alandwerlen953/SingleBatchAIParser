@@ -61,28 +61,37 @@ def main():
     args = parser.parse_args()
     
     # Import modules that need environment variables
-    from pythonProject2.two_step_processor_taxonomy import (
+    from two_step_processor_taxonomy import (
         process_single_resume_two_step, 
         run_taxonomy_enhanced_batch,
         BATCH_SIZE, MAX_WORKERS, USE_BATCH_API
     )
-    from pythonProject2.resume_utils import get_resume_by_userid
+    from resume_utils import get_resume_by_userid
     
-    # Override global settings with command line arguments if provided
+    # Import values first
+    from two_step_processor_taxonomy import BATCH_SIZE as DEFAULT_BATCH_SIZE
+    from two_step_processor_taxonomy import MAX_WORKERS as DEFAULT_WORKERS
+    from two_step_processor_taxonomy import USE_BATCH_API as DEFAULT_USE_BATCH_API
+    
+    # Set module-level variables
+    import two_step_processor_taxonomy
+    
+    # Override settings with command line arguments if provided
     if args.batch_size:
-        # Using a global because the module uses it - not ideal but works with current structure
-        global BATCH_SIZE
-        BATCH_SIZE = args.batch_size
-        logging.info(f"Setting batch size to {BATCH_SIZE}")
+        two_step_processor_taxonomy.BATCH_SIZE = args.batch_size
+        logging.info(f"Setting batch size to {args.batch_size}")
+    else:
+        two_step_processor_taxonomy.BATCH_SIZE = DEFAULT_BATCH_SIZE
         
     if args.workers:
-        global MAX_WORKERS
-        MAX_WORKERS = args.workers
-        logging.info(f"Setting worker count to {MAX_WORKERS}")
+        two_step_processor_taxonomy.MAX_WORKERS = args.workers
+        logging.info(f"Setting worker count to {args.workers}")
+    else:
+        two_step_processor_taxonomy.MAX_WORKERS = DEFAULT_WORKERS
         
     # Use batch API setting
-    global USE_BATCH_API
-    USE_BATCH_API = args.use_batch_api
+    two_step_processor_taxonomy.USE_BATCH_API = args.use_batch_api
+    logging.info(f"Batch API setting: {args.use_batch_api}")
     
     try:
         # Single user mode
@@ -90,7 +99,7 @@ def main():
             logging.info(f"Processing single user with ID: {args.userid}")
             
             # Get the resume for this user
-            from pythonProject2.process_single_user import process_with_detailed_logging
+            from process_single_user import process_with_detailed_logging
             
             # Fetch the resume
             resume_data = get_resume_by_userid(args.userid)
