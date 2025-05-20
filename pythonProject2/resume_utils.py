@@ -13,6 +13,14 @@ import tiktoken
 import openai
 from dotenv import load_dotenv
 
+# Import our enhanced database connection module
+from db_connection import (
+    get_resume_batch_with_retry,
+    get_resume_by_userid_with_retry,
+    update_candidate_record,
+    test_connection as test_db_connection
+)
+
 # Load environment variables
 load_dotenv()
 
@@ -95,81 +103,19 @@ def apply_token_truncation(messages, max_input_tokens=120000):
             
     return truncated_messages
 
+# Use the enhanced database-fetching functions from db_connection module
 def get_resume_batch(batch_size=None):
     """
-    Get a batch of resumes from the database.
+    Get a batch of resumes from the database using enhanced retry logic.
     
     Args:
         batch_size: Number of resumes to retrieve. If None, defaults to 25.
-                   This is typically overridden by BATCH_SIZE in two_step_processor_taxonomy.py
     """
-    # Use default value if none provided
-    if batch_size is None:
-        batch_size = 25
-    # Initialize skipped userids if not already done
-    if not hasattr(get_resume_batch, 'skipped_userids'):
-        get_resume_batch.skipped_userids = set()
-        
-    server_ip = '172.19.115.25'
-    database = 'BH_Mirror'
-    username = 'silver'
-    password = 'ltechmatlen' 
-    
-    try:
-        # Connect to the database
-        connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server_ip};DATABASE={database};UID={username};PWD={password}'
-        conn = pyodbc.connect(connection_string)
-        cursor = conn.cursor()
-        
-        # Create the skipped IDs string for the IN clause
-        skipped_ids_str = ','.join(str(id) for id in get_resume_batch.skipped_userids) or '0'
-        
-        # Query to get unprocessed resumes - fix for the correct table name
-        query = f"""
-            SELECT TOP {batch_size} 
-                    userid,
-                    markdownResume as cleaned_resume
-                FROM dbo.aicandidate WITH (NOLOCK)
-                WHERE LastProcessed IS NULL
-                    AND userid NOT IN ({skipped_ids_str})
-                    AND markdownresume <> ''
-                    AND markdownresume IS NOT NULL
-            ORDER BY datelastmodified desc
-        """
-        
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        
-        resume_batch = []
-        if rows:
-            for row in rows:
-                userid = row[0]
-                cleaned_resume = row[1]
-                
-                if cleaned_resume and len(str(cleaned_resume).strip()) > 0:
-                    resume_batch.append((userid, cleaned_resume))
-                    logging.info(f"Added UserID {userid} to batch (resume length: {len(cleaned_resume)})")
-                else:
-                    logging.warning(f"Empty resume text for UserID {userid} - skipping")
-                    get_resume_batch.skipped_userids.add(userid)
-            
-            logging.info(f"Retrieved {len(resume_batch)} valid resumes for processing")
-        else:
-            logging.info("No unprocessed records found")
-            get_resume_batch.skipped_userids.clear()
-            
-        cursor.close()
-        conn.close()
-        
-        return resume_batch
-        
-    except Exception as e:
-        logging.error(f"Error retrieving resume batch: {str(e)}")
-        return []
+    return get_resume_batch_with_retry(batch_size=batch_size if batch_size else 25, max_retries=3)
 
 def get_resume_by_userid(userid):
     """
-    Get a specific resume by user ID
+    Get a specific resume by user ID using enhanced retry logic.
     
     Args:
         userid: The user ID to retrieve
@@ -177,47 +123,7 @@ def get_resume_by_userid(userid):
     Returns:
         A tuple of (userid, resume_text) or None if not found
     """
-    server_ip = '172.19.115.25'
-    database = 'BH_Mirror'
-    username = 'silver'
-    password = 'ltechmatlen'
-    
-    try:
-        # Connect to the database
-        connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server_ip};DATABASE={database};UID={username};PWD={password}'
-        conn = pyodbc.connect(connection_string)
-        cursor = conn.cursor()
-        
-        # Query to get the specific resume
-        query = """
-            SELECT userid, markdownResume as cleaned_resume
-            FROM dbo.aicandidate WITH (NOLOCK)
-            WHERE userid = ?
-        """
-        
-        cursor.execute(query, userid)
-        row = cursor.fetchone()
-        
-        if row:
-            userid = row[0]
-            cleaned_resume = row[1]
-            
-            if cleaned_resume and len(str(cleaned_resume).strip()) > 0:
-                logging.info(f"Retrieved resume for UserID {userid} (resume length: {len(cleaned_resume)})")
-                return (userid, cleaned_resume)
-            else:
-                logging.warning(f"Empty resume text for UserID {userid}")
-                return None
-        else:
-            logging.error(f"No record found for UserID {userid}")
-            return None
-            
-        cursor.close()
-        conn.close()
-        
-    except Exception as e:
-        logging.error(f"Error retrieving resume for UserID {userid}: {str(e)}")
-        return None
+    return get_resume_by_userid_with_retry(userid, max_retries=3)
 
 def is_valid_sql_date(date_str):
     """Check if a string is a valid SQL Server date format"""
@@ -246,6 +152,8 @@ def diagnose_database_fields(userid, parsed_data):
         "MostRecentEndDate", "ZipCode"
     ]
     
+    issues_found = []
+    
     # Check date fields for validity
     date_fields = ["MostRecentStartDate", "MostRecentEndDate", "SecondMostRecentStartDate", "SecondMostRecentEndDate", 
                   "ThirdMostRecentStartDate", "ThirdMostRecentEndDate", "FourthMostRecentStartDate", "FourthMostRecentEndDate", 
@@ -267,9 +175,6 @@ def diagnose_database_fields(userid, parsed_data):
                 except ValueError:
                     logging.warning(f"[DB DIAGNOSE] Date field {field} has invalid date format: {value}")
                     issues_found.append(f"Date field {field} has invalid format: {value}")
-
-    
-    issues_found = []
     
     # Check numeric fields
     numeric_fields = ["LengthinUS", "YearsofExperience", "AvgTenure"]
@@ -316,227 +221,64 @@ def diagnose_database_fields(userid, parsed_data):
     return issues_found
 
 def update_candidate_record_with_retry(userid, parsed_data, max_retries=3):
-    """Update the aicandidate table with parsed resume data with deadlock retry"""
-    # Safety check: Make sure parsed_data has expected fields
+    """
+    Update the aicandidate table with parsed resume data using enhanced error handling and retry logic.
+    
+    Args:
+        userid: User ID to update
+        parsed_data: Dictionary of field values to update
+        max_retries: Maximum number of update attempts
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
     try:
-        # Ensure all keys in parsed_data are strings
-        for key in list(parsed_data.keys()):
-            if not isinstance(key, str):
-                logging.warning(f"[DB] Non-string key found in parsed_data: {key} ({type(key).__name__}). Converting to string.")
-                value = parsed_data[key]
-                del parsed_data[key]
-                parsed_data[str(key)] = value
-                
-        # Fix field names to match database columns
-        if "ZipCode" in parsed_data and "Zipcode" not in parsed_data:
-            logging.info(f"[DB] Converting ZipCode to Zipcode to match database column name")
-            parsed_data["Zipcode"] = parsed_data["ZipCode"]
-            del parsed_data["ZipCode"]
+        # Diagnose potential issues before trying to update
+        issues = diagnose_database_fields(userid, parsed_data)
+        if issues:
+            logging.warning(f"Found {len(issues)} potential issues with fields for UserID {userid}")
+            # Continue anyway - the issues are logged and db_connection will handle them
+        
+        # Use the enhanced update function from the db_connection module
+        success, message = update_candidate_record(userid, parsed_data, max_retries=max_retries)
+        
+        if success:
+            logging.info(f"Successfully updated record for UserID {userid}")
+        else:
+            logging.error(f"Failed to update record for UserID {userid}: {message}")
+        
+        return success
+    
     except Exception as e:
-        logging.error(f"[DB] Error preprocessing parsed_data for UserID {userid}: {str(e)}")
-        # Continue anyway, we've done our best to clean the data
-    server_ip = '172.19.115.25'
-    database = 'BH_Mirror'
-    username = 'silver'
-    password = 'ltechmatlen'
+        import traceback
+        logging.error(f"Unexpected error in update_candidate_record_with_retry: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        return False
 
-    # Define values that should be treated as null
-    null_values = {'NULL'}
+# Test the database connection
+def test_database_connection():
+    """Test the database connection and report results"""
+    logging.info("Testing database connection...")
+    if test_db_connection():
+        logging.info("✅ Database connection test successful!")
+        return True
+    else:
+        logging.error("❌ Database connection test failed")
+        return False
 
-    # Max text length for trimming
-    max_text_length = 7000  # Adjust this based on your database schema
-
-    logging.info(f"[DB] Preparing to update database for UserID {userid}")
-    retry_count = 0
-    while retry_count < max_retries:
-        try:
-            # Connect to the database
-            logging.info(f"[DB] Connecting to database server {server_ip}, database {database}")
-            connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server_ip};DATABASE={database};UID={username};PWD={password}'
-            conn = pyodbc.connect(connection_string)
-            cursor = conn.cursor()
-            logging.info(f"[DB] Successfully connected to database")
-            
-            # Start a transaction
-            conn.autocommit = False
-            logging.info(f"[DB] Starting database transaction")
-            
-            # Check if the record already exists
-            check_query = "SELECT COUNT(*) FROM aicandidate WHERE userid = ?"
-            logging.info(f"[DB] Executing query: {check_query} with params: [{userid}]")
-            cursor.execute(check_query, userid)
-            exists = cursor.fetchone()[0] > 0
-            logging.info(f"[DB] Record exists check result: {exists}")
-            
-            # Prepare field lists and parameter markers for the SQL query
-            fields = []
-            params = []
-            param_markers = []
-            
-            # Add userid to fields and params
-            fields.append("userid")
-            params.append(userid)
-            param_markers.append("?")
-            
-            # Process each field in parsed_data
-            skipped_fields = []
-            for field, value in parsed_data.items():
-                # Skip empty or null values if updating
-                if exists and (value in null_values or value == ""):
-                    skipped_fields.append(field)
-                    continue
-                
-                # Handle case sensitivity issues in field names
-                db_field = field
-                if field == "ZipCode":
-                    db_field = "Zipcode"  # Match the actual column name in the database
-                    logging.info(f"[DB] Field name corrected: Using 'Zipcode' instead of 'ZipCode' for database")
-                
-                # Special handling for date fields
-                date_fields = ["MostRecentStartDate", "MostRecentEndDate", "SecondMostRecentStartDate", "SecondMostRecentEndDate", 
-                              "ThirdMostRecentStartDate", "ThirdMostRecentEndDate", "FourthMostRecentStartDate", "FourthMostRecentEndDate", 
-                              "FifthMostRecentStartDate", "FifthMostRecentEndDate", "SixthMostRecentStartDate", "SixthMostRecentEndDate", 
-                              "SeventhMostRecentStartDate", "SeventhMostRecentEndDate"]
-                
-                if field in date_fields and not is_valid_sql_date(value):
-                    # Skip this field for database update as SQL Server won't accept it
-                    logging.info(f"[DB] Skipping field {field} with value '{value}' as it's not a valid SQL date format")
-                    skipped_fields.append(field)
-                    continue
-                
-                fields.append(db_field)
-                
-                # Convert empty strings and "NULL" to None for SQL NULL
-                if value in null_values or value == "":
-                    params.append(None)
-                    logging.debug(f"[DB] Field {field}: Converting empty/NULL value to SQL NULL")
-                else:
-                    # Truncate text fields if needed to prevent SQL errors
-                    if isinstance(value, str) and len(value) > max_text_length:
-                        logging.warning(f"[DB] Truncating {field} for UserID {userid} from {len(value)} to {max_text_length} characters")
-                        params.append(value[:max_text_length])
-                    else:
-                        params.append(value)
-                        # For important fields, log the value being sent to the database
-                        if field in ["LengthinUS", "YearsofExperience", "AvgTenure", "PrimaryTitle", "MostRecentCompany", "ZipCode"]:
-                            logging.info(f"[DB] Field {field} -> DB field '{db_field}' value: '{value}'")
-                
-                param_markers.append("?")
-            
-            # Log skipped fields if any
-            if skipped_fields:
-                logging.info(f"[DB] Skipped {len(skipped_fields)} empty fields: {', '.join(skipped_fields)}")
-            
-            # Add LastProcessed timestamp
-            current_time = datetime.now()
-            fields.append("LastProcessed")
-            params.append(current_time)
-            param_markers.append("?")
-            logging.info(f"[DB] Setting LastProcessed to {current_time}")
-            
-            # Build and execute the appropriate SQL query (INSERT or UPDATE)
-            if exists:
-                # UPDATE query
-                set_clauses = [f"{field} = ?" for field in fields if field != "userid"]
-                query = f"UPDATE aicandidate SET {', '.join(set_clauses)} WHERE userid = ?"
-                
-                # Prepare parameters: all except userid, then userid at the end
-                update_params = [params[i] for i in range(len(fields)) if fields[i] != "userid"]
-                update_params.append(userid)  # Add userid for WHERE clause
-                
-                logging.info(f"[DB] Executing UPDATE query for UserID {userid} with {len(update_params)} parameters")
-                logging.debug(f"[DB] SQL: {query}")
-                # Log field names being updated
-                field_names = [fields[i] for i in range(len(fields)) if fields[i] != "userid"]
-                logging.info(f"[DB] Updating fields: {', '.join(field_names)}")
-                
-                cursor.execute(query, update_params)
-                logging.info(f"[DB] UPDATE query executed successfully, rows affected: {cursor.rowcount}")
-            else:
-                # INSERT query
-                query = f"INSERT INTO aicandidate ({', '.join(fields)}) VALUES ({', '.join(param_markers)})"
-                logging.info(f"[DB] Executing INSERT query for UserID {userid} with {len(params)} parameters")
-                logging.debug(f"[DB] SQL: {query}")
-                logging.info(f"[DB] Inserting fields: {', '.join(fields)}")
-                
-                cursor.execute(query, params)
-                logging.info(f"[DB] INSERT query executed successfully, rows affected: {cursor.rowcount}")
-            
-            # Commit the transaction
-            logging.info(f"[DB] Committing transaction")
-            conn.commit()
-            logging.info(f"[DB] Transaction committed successfully")
-            
-            cursor.close()
-            conn.close()
-            logging.info(f"[DB] Database connection closed")
-            
-            return True
-            
-        except pyodbc.Error as e:
-            error_message = str(e)
-            error_code = getattr(e, 'args', [None])[0] if hasattr(e, 'args') else 'Unknown'
-            
-            # Check specifically for deadlock error
-            if "deadlock" in error_message.lower() or "40001" in error_message:
-                retry_count += 1
-                logging.warning(f"[DB] Database deadlock detected for UserID {userid}. Error code: {error_code}. Retry {retry_count}/{max_retries}.")
-                logging.warning(f"[DB] Deadlock error details: {error_message}")
-                
-                # Exponential backoff
-                sleep_time = 0.5 * (2 ** retry_count)  # 1, 2, 4, 8... seconds
-                logging.info(f"[DB] Waiting {sleep_time}s before retry")
-                time.sleep(sleep_time)
-                
-                continue  # Try again
-            else:
-                # Other database error
-                logging.error(f"[DB] Database error for UserID {userid}: Error code: {error_code}")
-                logging.error(f"[DB] Error message: {error_message}")
-                
-                # Examine common database error types
-                if "syntax error" in error_message.lower() or "invalid column" in error_message.lower() or "column name" in error_message.lower():
-                    logging.error(f"[DB] SQL syntax or column error detected - check field names and values")
-                    if exists:
-                        logging.error(f"[DB] Fields being updated: {', '.join([fields[i] for i in range(len(fields)) if fields[i] != 'userid'])}")
-                    else:
-                        logging.error(f"[DB] Fields being inserted: {', '.join(fields)}")
-                elif "data type" in error_message.lower() or "convert" in error_message.lower():
-                    logging.error(f"[DB] Data type conversion error detected - check field data types")
-                    # Try to identify problematic fields by checking numeric fields
-                    for field in ["LengthinUS", "YearsofExperience", "AvgTenure"]:
-                        if field in parsed_data:
-                            val = parsed_data[field]
-                            if val:
-                                logging.error(f"[DB] Field {field} value: '{val}' (type: {type(val).__name__})")
-                                try:
-                                    # Try to convert to float to check if it's a valid number
-                                    float_val = float(val)
-                                    logging.error(f"[DB] {field} can be converted to float: {float_val}")
-                                except ValueError:
-                                    logging.error(f"[DB] {field} CANNOT be converted to a valid number!")
-                elif "violation of primary key" in error_message.lower():
-                    logging.error(f"[DB] Primary key violation - record with userid {userid} might already exist")
-                elif "string or binary data would be truncated" in error_message.lower():
-                    logging.error(f"[DB] String truncation error - a field value is too long for its column")
-                    # Check for long field values
-                    for field, value in parsed_data.items():
-                        if isinstance(value, str) and len(value) > 100:
-                            logging.error(f"[DB] Field {field} has long value: {len(value)} characters")
-                elif "constraint" in error_message.lower():
-                    logging.error(f"[DB] Constraint violation - a field value violates a database constraint")
-                
-                # Log the transaction size
-                logging.error(f"[DB] Transaction contained {len(fields)} fields")
-                return False
-                
-        except Exception as e:
-            # Any other error
-            import traceback
-            logging.error(f"[DB] Error updating record for UserID {userid}: {str(e)}")
-            logging.error(f"[DB] Error traceback: {traceback.format_exc()}")
-            return False
-            
-    # If we've exhausted retries
-    logging.error(f"[DB] Failed to update record for UserID {userid} after {max_retries} retries due to deadlocks.")
-    return False
+# For standalone testing
+if __name__ == "__main__":
+    # Test database connection
+    test_database_connection()
+    
+    # Try to get a single resume
+    test_userid = "12345"  # Replace with a valid user ID
+    resume = get_resume_by_userid(test_userid)
+    if resume:
+        logging.info(f"Successfully retrieved resume for UserID {test_userid}")
+    else:
+        logging.warning(f"Could not retrieve resume for UserID {test_userid}")
+    
+    # Try to get a batch of resumes
+    batch = get_resume_batch(batch_size=2)
+    logging.info(f"Retrieved {len(batch)} resumes in test batch")
