@@ -1,0 +1,61 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+*.log.*
+*.tmp
+logs/
+temp/
+tmp/
+
+# Processing results files
+*_detailed_processing.json
+*_processing.json
+userid_processing.log
+
+# Environment variables
+.env
+.env.*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Debug files
+debug_*.py
+debug_*.log
+*.debug
+
+# Automatically generated files that should not be in version control
+*.pyc
+*.bak
+
+# Exclude individual user processing results
+*_detailed_processing.json
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
