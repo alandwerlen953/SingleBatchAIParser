@@ -165,7 +165,8 @@ def create_pyodbc_connection(server=DEFAULT_SERVER, database=DEFAULT_DATABASE,
                 try:
                     cursor.execute("SET ARITHABORT ON")
                     cursor.execute("SET LOCK_TIMEOUT 60000")  # 60 second lock timeout
-                    cursor.execute("SET QUERY_TIMEOUT 300")   # 5 minute query timeout
+                    # QUERY_TIMEOUT is not supported in this SQL Server version
+                    # cursor.execute("SET QUERY_TIMEOUT 300")   # 5 minute query timeout
                 except Exception as e:
                     logger.warning(f"Could not set all SQL Server options (non-critical): {e}")
             finally:
@@ -493,7 +494,7 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3):
         skipped_ids = get_resume_batch_with_retry.skipped_userids
         skipped_ids_str = ','.join(str(id) for id in skipped_ids) or '0'
         
-        # Query to get unprocessed resumes
+        # Query to get unprocessed resumes from the last 3 days where markdownResume is processed but not LastProcessed
         query = f"""
             SELECT TOP {batch_size} 
                 userid,
@@ -503,7 +504,9 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3):
                 AND userid NOT IN ({skipped_ids_str})
                 AND markdownresume <> ''
                 AND markdownresume IS NOT NULL
-            ORDER BY datelastmodified desc
+                AND lastprocessedmarkdown IS NOT NULL
+                AND lastprocessedmarkdown >= DATEADD(day, -3, GETDATE())
+            ORDER BY lastprocessedmarkdown desc
         """
         
         # Execute query with retry logic

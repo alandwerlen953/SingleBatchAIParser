@@ -48,6 +48,8 @@ def setup_parser():
                        help='Run continuously, processing new batches as they become available')
     parser.add_argument('--interval', type=int, default=300,
                        help='Interval in seconds between batch runs when in continuous mode (default: 300)')
+    parser.add_argument('--unified', action='store_true',
+                       help='Use unified single-step processing (more token efficient)')
     
     return parser
 
@@ -75,6 +77,14 @@ def main():
     
     # Set module-level variables
     import two_step_processor_taxonomy
+    
+    # Import unified processor if needed
+    if args.unified:
+        logging.info("Using unified single-step processing (token efficient mode)")
+        from single_step_processor import (
+            process_single_resume_unified,
+            run_unified_batch
+        )
     
     # Override settings with command line arguments if provided
     if args.batch_size:
@@ -120,21 +130,25 @@ def main():
                 
         # Batch mode
         else:
+            # Choose the processing function based on the unified flag
+            batch_function = run_unified_batch if args.unified else run_taxonomy_enhanced_batch
+            processor_type = "unified single-step" if args.unified else "two-step"
+            
             if args.continuous:
-                logging.info(f"Starting continuous batch processing (interval: {args.interval}s)")
+                logging.info(f"Starting continuous {processor_type} batch processing (interval: {args.interval}s)")
                 
                 # Run continuously with the specified interval
                 while True:
-                    logging.info(f"Starting batch run at {datetime.now()}")
-                    run_taxonomy_enhanced_batch()
+                    logging.info(f"Starting {processor_type} batch run at {datetime.now()}")
+                    batch_function()
                     
                     logging.info(f"Batch completed. Waiting {args.interval} seconds until next run...")
                     time.sleep(args.interval)
             else:
                 # Run once
-                logging.info("Starting batch processing")
-                run_taxonomy_enhanced_batch()
-                logging.info("Batch processing completed")
+                logging.info(f"Starting {processor_type} batch processing")
+                batch_function()
+                logging.info(f"Batch processing completed")
     
     except KeyboardInterrupt:
         logging.info("Process interrupted by user")
