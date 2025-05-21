@@ -467,13 +467,14 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
         return False, f"Unexpected error: {str(e)}"
 
 # Utility function to get a batch of resumes with retry logic
-def get_resume_batch_with_retry(batch_size=25, max_retries=3):
+def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True):
     """
     Get a batch of unprocessed resumes with retry logic
     
     Args:
         batch_size: Number of resumes to retrieve
         max_retries: Maximum number of connection/query attempts
+        reset_skipped: Whether to reset the skipped userids set
         
     Returns:
         list: List of (userid, resume_text) tuples
@@ -481,6 +482,11 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3):
     # Initialize skipped userids if not already done
     if not hasattr(get_resume_batch_with_retry, 'skipped_userids'):
         get_resume_batch_with_retry.skipped_userids = set()
+    
+    # Reset skipped userids if requested
+    if reset_skipped:
+        get_resume_batch_with_retry.skipped_userids.clear()
+        logger.info("Reset skipped userids list")
     
     # First establish connection
     conn, conn_success, conn_message = create_pyodbc_connection(retries=max_retries)

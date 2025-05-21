@@ -104,14 +104,19 @@ def apply_token_truncation(messages, max_input_tokens=120000):
     return truncated_messages
 
 # Use the enhanced database-fetching functions from db_connection module
-def get_resume_batch(batch_size=None):
+def get_resume_batch(batch_size=None, reset_skipped=True):
     """
     Get a batch of resumes from the database using enhanced retry logic.
     
     Args:
         batch_size: Number of resumes to retrieve. If None, defaults to 25.
+        reset_skipped: Whether to reset the skipped userids set. Default is True.
     """
-    return get_resume_batch_with_retry(batch_size=batch_size if batch_size else 25, max_retries=3)
+    return get_resume_batch_with_retry(
+        batch_size=batch_size if batch_size else 25, 
+        max_retries=3,
+        reset_skipped=reset_skipped
+    )
 
 def get_resume_by_userid(userid):
     """
