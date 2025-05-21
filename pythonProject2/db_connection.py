@@ -500,9 +500,10 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
         skipped_ids = get_resume_batch_with_retry.skipped_userids
         skipped_ids_str = ','.join(str(id) for id in skipped_ids) or '0'
         
-        # Query to get unprocessed resumes from the last 3 days where markdownResume is processed but not LastProcessed
+        # Query to get ALL unprocessed resumes from the last 3 days where markdownResume is processed but not LastProcessed
+        # Removed TOP clause to process all matching records
         query = f"""
-            SELECT TOP {batch_size} 
+            SELECT 
                 userid,
                 markdownResume as cleaned_resume
             FROM dbo.aicandidate WITH (NOLOCK)
