@@ -500,20 +500,27 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
         skipped_ids = get_resume_batch_with_retry.skipped_userids
         skipped_ids_str = ','.join(str(id) for id in skipped_ids) or '0'
         
+        # Log current skipped IDs for debugging
+        if skipped_ids:
+            logger.info(f"Currently skipped userids ({len(skipped_ids)}): {sorted(skipped_ids)}")
+        else:
+            logger.info("No userids currently in skipped list")
+        
         # Query to get ALL unprocessed resumes from the last 3 days where markdownResume is processed but not LastProcessed
         # Removed TOP clause to process all matching records
+        # Fixed date comparison to use date-only comparison for better matching
         query = f"""
             SELECT 
                 userid,
                 markdownResume as cleaned_resume
             FROM dbo.aicandidate WITH (NOLOCK)
             WHERE LastProcessed IS NULL
-                AND userid NOT IN ({skipped_ids_str})
+                
                 AND markdownresume <> ''
                 AND markdownresume IS NOT NULL
                 AND lastprocessedmarkdown IS NOT NULL
-                AND lastprocessedmarkdown >= DATEADD(day, -3, GETDATE())
-            ORDER BY lastprocessedmarkdown desc
+                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(day, -3, GETDATE()) AS DATE)
+            ORDER BY datelastmodified desc
         """
         
         # Execute query with retry logic
@@ -526,6 +533,10 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
         
         resume_batch = []
         if result:
+            # Log all userids found by the query
+            found_userids = [row[0] for row in result]
+            logger.info(f"SQL query found {len(found_userids)} total records: {sorted(found_userids)}")
+            
             for row in result:
                 userid = row[0]
                 cleaned_resume = row[1]

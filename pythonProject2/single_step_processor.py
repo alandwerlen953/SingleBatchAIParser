@@ -323,6 +323,37 @@ def parse_unified_response(response_text):
     # Combine the results
     extracted_fields.update(tech_fields)
     
+    # Explicitly look for Top 10 Technical Skills
+    skills_match = re.search(r'Top 10 Technical Skills:\s*(.+?)(?:\n|$)', response_text)
+    if skills_match:
+        skills = skills_match.group(1).strip()
+        if skills and skills.upper() != "NULL":
+            # This is crucial for skills extraction to work later
+            extracted_fields["Top10Skills"] = skills
+            logging.info(f"Found Top10Skills: {skills}")
+        else:
+            logging.warning("Top10Skills field is empty or NULL")
+    else:
+        logging.warning("Top10Skills field not found in response")
+        
+        # Fallback: Try to construct Top10Skills from other technical fields
+        tech_skills = []
+        
+        # Check for technical languages
+        for field in ["PrimarySoftwareLanguage", "SecondarySoftwareLanguage", "TertiarySoftwareLanguage"]:
+            if field in extracted_fields and extracted_fields[field] and extracted_fields[field] != "NULL":
+                tech_skills.append(extracted_fields[field])
+                
+        # Check for software applications
+        for field in ["SoftwareApp1", "SoftwareApp2", "SoftwareApp3", "SoftwareApp4", "SoftwareApp5"]:
+            if field in extracted_fields and extracted_fields[field] and extracted_fields[field] != "NULL":
+                tech_skills.append(extracted_fields[field])
+        
+        # If we found some skills, use them
+        if tech_skills:
+            extracted_fields["Top10Skills"] = ", ".join(tech_skills[:10])
+            logging.info(f"Constructed Top10Skills from other fields: {extracted_fields['Top10Skills']}")
+    
     return extracted_fields
 
 def process_single_resume_unified(resume_data):
@@ -385,9 +416,39 @@ def process_single_resume_unified(resume_data):
         # Apply enhanced date processing
         enhanced_results = process_resume_with_enhanced_dates(userid, parsed_results)
         
-        # Extract skills for database format - mirror exact approach from two_step_processor
-        skills_list = enhanced_results.get("Top10Skills", "").split(", ") if enhanced_results.get("Top10Skills") and enhanced_results.get("Top10Skills") != "NULL" else []
+        # Extract skills for database format
+        top10_skills_raw = enhanced_results.get("Top10Skills", "")
+        logging.info(f"UserID {userid}: Raw Top10Skills value: '{top10_skills_raw}'")
+        
+        if top10_skills_raw and top10_skills_raw != "NULL":
+            # Try different separators
+            if ", " in top10_skills_raw:
+                skills_list = top10_skills_raw.split(", ")
+                logging.info(f"UserID {userid}: Split skills by comma+space: {skills_list}")
+            elif "," in top10_skills_raw:
+                skills_list = [s.strip() for s in top10_skills_raw.split(",")]
+                logging.info(f"UserID {userid}: Split skills by comma: {skills_list}")
+            else:
+                # Last resort - try to use the value as a single skill
+                skills_list = [top10_skills_raw]
+                logging.info(f"UserID {userid}: Using single skill value: {skills_list}")
+        else:
+            logging.warning(f"UserID {userid}: No Top10Skills found")
+            skills_list = []
+            
+            # Try to extract individual skills from the response if possible
+            if "PrimarySoftwareLanguage" in enhanced_results and enhanced_results["PrimarySoftwareLanguage"]:
+                skills_list.append(enhanced_results["PrimarySoftwareLanguage"])
+            if "SecondarySoftwareLanguage" in enhanced_results and enhanced_results["SecondarySoftwareLanguage"]:
+                skills_list.append(enhanced_results["SecondarySoftwareLanguage"])
+            
+            logging.info(f"UserID {userid}: Constructed skills from other fields: {skills_list}")
+        
+        # Ensure we have exactly 10 skills with placeholders for empty spots
         skills_list.extend([""] * (10 - len(skills_list)))  # Ensure we have 10 skills
+        skills_list = skills_list[:10]  # Limit to exactly 10
+        
+        logging.info(f"UserID {userid}: Final skills list: {skills_list}")
         
         # Clean up phone numbers - prevent duplicates and normalize format
         phone1 = enhanced_results.get("Phone1", "")
@@ -501,7 +562,7 @@ def run_unified_batch():
         from two_step_processor_taxonomy import BATCH_SIZE, MAX_WORKERS
         
         # Get a batch of resumes
-        logging.info(f"Fetching batch of up to {BATCH_SIZE} unprocessed resumes...")
+        logging.info("Fetching ALL unprocessed resumes matching criteria...")
         resume_batch = get_resume_batch(BATCH_SIZE)
         
         if not resume_batch:
