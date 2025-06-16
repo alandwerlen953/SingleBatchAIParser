@@ -17,6 +17,10 @@ import traceback
 # Configure module logger
 logger = logging.getLogger("resume_parser.db_connection")
 
+# Check if we're in quiet mode and set appropriate level
+if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
+    logger.setLevel(logging.ERROR)
+
 # Database connection defaults
 DEFAULT_SERVER = '172.19.115.25'
 DEFAULT_DATABASE = 'BH_Mirror'

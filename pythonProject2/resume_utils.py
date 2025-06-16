@@ -24,10 +24,18 @@ from db_connection import (
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+# Check if we're in quiet mode
+if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
+    # Set root logger to ERROR level for quiet mode
+    logging.getLogger().setLevel(logging.ERROR)
+
+# Configure logging only if not already configured
+if not logging.getLogger().handlers:
+    # Get the appropriate level based on quiet mode
+    log_level = logging.ERROR if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes') else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(levelname)s - %(message)s',
     force=True
 )
 

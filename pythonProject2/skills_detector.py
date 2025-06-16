@@ -15,7 +15,7 @@ import logging
 
 # Check if we're in quiet mode
 if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
-    logging.disable(logging.CRITICAL)
+    logging.disable(logging.WARNING)  # Disable WARNING and below, but allow ERROR
 
 # Path to skills taxonomy file
 SKILLS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Dictionary", "newSkills.csv")
@@ -327,12 +327,5 @@ def get_taxonomy_context(resume_text, max_categories=2, userid=None):
 
 # Test loading the taxonomy when module is imported
 if __name__ != "__main__":
-    # Suppress the initial load message if in quiet mode
-    if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
-        # Temporarily disable logging for this load
-        original_level = logging.root.level
-        logging.disable(logging.CRITICAL)
-        load_skills_taxonomy()
-        logging.disable(original_level)
-    else:
-        load_skills_taxonomy()
+    # Load taxonomy - errors will still be shown even in quiet mode
+    load_skills_taxonomy()

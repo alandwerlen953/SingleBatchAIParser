@@ -21,14 +21,10 @@ import argparse
 import time
 from datetime import datetime
 
-# Check for --quiet flag early to suppress all logging
+# Check for --quiet flag early to suppress non-error logging
 if '--quiet' in sys.argv:
-    # Suppress ALL logging by setting root logger to highest level
-    logging.getLogger().setLevel(logging.CRITICAL + 1)
-    # Also set a null handler to prevent any output
-    logging.getLogger().addHandler(logging.NullHandler())
-    # Disable logging entirely
-    logging.disable(logging.CRITICAL)
+    # Set root logger to ERROR level
+    logging.getLogger().setLevel(logging.ERROR)
     # Set environment variable so imported modules know to be quiet
     os.environ['QUIET_MODE'] = '1'
 
@@ -55,7 +51,7 @@ def setup_parser():
     parser.add_argument('--unified', action='store_true',
                        help='Use unified single-step processing (more token efficient)')
     parser.add_argument('--quiet', action='store_true',
-                       help='Suppress all logging output')
+                       help='Suppress all logging output except errors')
     
     return parser
 
@@ -70,12 +66,19 @@ def main():
     
     # Configure logging based on --quiet flag
     if args.quiet:
-        # Already configured early, but ensure it stays quiet
-        logging.getLogger().setLevel(logging.CRITICAL + 1)
-        logging.disable(logging.CRITICAL)
+        # Configure basic logging with ERROR level
+        logging.basicConfig(
+            level=logging.ERROR,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log"),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
+        # Also set all existing loggers to ERROR level
+        for logger_name in logging.root.manager.loggerDict:
+            logging.getLogger(logger_name).setLevel(logging.ERROR)
     else:
-        # Re-enable logging if it was disabled
-        logging.disable(logging.NOTSET)
         # Normal logging configuration
         logging.basicConfig(
             level=logging.INFO,
