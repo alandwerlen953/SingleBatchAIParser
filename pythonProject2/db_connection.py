@@ -344,8 +344,87 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
         logger.error(f"Error preprocessing parsed_data: {str(e)}")
         # Continue anyway - we've done our best to clean the data
     
-    # Max text length for trimming
-    max_text_length = 7000  # Adjust based on database schema
+    # Field-specific length limits based on actual database schema
+    field_limits = {
+        # nvarchar(max) fields - no limit
+        'Summary': None,
+        'Certifications': None,
+        'ProjectTypes': None,
+        'Specialty': None,
+        'resume': None,
+        'markdownresume': None,
+        
+        # Limited length fields
+        'PrimaryTitle': 255,
+        'SecondaryTitle': 255,
+        'TertiaryTitle': 255,
+        'Address': 255,
+        'City': 100,
+        'State': 50,
+        'Bachelors': 255,
+        'Masters': 255,
+        'Phone1': 50,
+        'Phone2': 50,
+        'Email': 255,
+        'Email2': 255,
+        'FirstName': 100,
+        'MiddleName': 100,
+        'LastName': 100,
+        'LinkedIn': 255,
+        'Linkedin': 255,  # Case variation
+        'MostRecentCompany': 255,
+        'SecondMostRecentCompany': 255,
+        'ThirdMostRecentCompany': 255,
+        'FourthMostRecentCompany': 255,
+        'FifthMostRecentCompany': 255,
+        'SixthMostRecentCompany': 255,
+        'SeventhMostRecentCompany': 255,
+        'MostRecentLocation': 255,
+        'SecondMostRecentLocation': 255,
+        'ThirdMostRecentLocation': 255,
+        'FourthMostRecentLocation': 255,
+        'FifthMostRecentLocation': 255,
+        'SixthMostRecentLocation': 255,
+        'SeventhMostRecentLocation': 255,
+        'PrimaryIndustry': 255,
+        'SecondaryIndustry': 255,
+        'Skill1': 100,
+        'Skill2': 100,
+        'Skill3': 100,
+        'Skill4': 100,
+        'Skill5': 100,
+        'Skill6': 100,
+        'Skill7': 100,
+        'Skill8': 100,
+        'Skill9': 100,
+        'Skill10': 100,
+        'PrimarySoftwareLanguage': 255,
+        'SecondarySoftwareLanguage': 255,
+        'TertiarySoftwareLanguage': 255,
+        'SoftwareApp1': 255,
+        'SoftwareApp2': 255,
+        'SoftwareApp3': 255,
+        'SoftwareApp4': 255,
+        'SoftwareApp5': 255,
+        'Hardware1': 255,
+        'Hardware2': 255,
+        'Hardware3': 255,
+        'Hardware4': 255,
+        'Hardware5': 255,
+        'PrimaryCategory': 255,
+        'SecondaryCategory': 255,
+        'LengthinUS': 50,
+        'YearsofExperience': 50,
+        'AvgTenure': 50,
+        'status': 50,
+        'employeetype': 100,
+        'Zipcode': 9,
+        'MostRecentPlacementTitle': 255,
+        'MostRecentPlacementClient': 255
+    }
+    
+    # Default max length for unknown fields
+    default_max_length = 255
     
     # First establish connection
     conn, conn_success, conn_message = create_pyodbc_connection(retries=max_retries)
@@ -404,10 +483,17 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
                     logger.warning(f"Skipping invalid date in field {field}: '{value}'")
                     continue
             
-            # Process text fields
-            if isinstance(value, str) and len(value) > max_text_length:
-                logger.warning(f"Truncating field {field} from {len(value)} to {max_text_length} characters")
-                params.append(value[:max_text_length])
+            # Process text fields with field-specific limits
+            if isinstance(value, str):
+                # Get field-specific limit
+                limit = field_limits.get(db_field, default_max_length)
+                
+                # Only truncate if there's a limit and value exceeds it
+                if limit and len(value) > limit:
+                    logger.warning(f"Truncating field {db_field} from {len(value)} to {limit} characters")
+                    params.append(value[:limit])
+                else:
+                    params.append(value)
             else:
                 params.append(value)
             

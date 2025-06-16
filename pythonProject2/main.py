@@ -20,6 +20,18 @@ import logging
 import argparse
 import time
 from datetime import datetime
+
+# Check for --quiet flag early to suppress all logging
+if '--quiet' in sys.argv:
+    # Suppress ALL logging by setting root logger to highest level
+    logging.getLogger().setLevel(logging.CRITICAL + 1)
+    # Also set a null handler to prevent any output
+    logging.getLogger().addHandler(logging.NullHandler())
+    # Disable logging entirely
+    logging.disable(logging.CRITICAL)
+    # Set environment variable so imported modules know to be quiet
+    os.environ['QUIET_MODE'] = '1'
+
 from dotenv import load_dotenv
 
 # Don't configure logging here - will be done after parsing args
@@ -58,12 +70,12 @@ def main():
     
     # Configure logging based on --quiet flag
     if args.quiet:
-        # Set logging to CRITICAL to suppress all output
-        logging.basicConfig(
-            level=logging.CRITICAL,
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
+        # Already configured early, but ensure it stays quiet
+        logging.getLogger().setLevel(logging.CRITICAL + 1)
+        logging.disable(logging.CRITICAL)
     else:
+        # Re-enable logging if it was disabled
+        logging.disable(logging.NOTSET)
         # Normal logging configuration
         logging.basicConfig(
             level=logging.INFO,
