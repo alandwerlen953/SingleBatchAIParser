@@ -22,15 +22,7 @@ import time
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Configure basic logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# Don't configure logging here - will be done after parsing args
 
 def setup_parser():
     """Set up command line argument parser"""
@@ -50,6 +42,8 @@ def setup_parser():
                        help='Interval in seconds between batch runs when in continuous mode (default: 300)')
     parser.add_argument('--unified', action='store_true',
                        help='Use unified single-step processing (more token efficient)')
+    parser.add_argument('--quiet', action='store_true',
+                       help='Suppress all logging output')
     
     return parser
 
@@ -61,6 +55,24 @@ def main():
     # Parse command line arguments
     parser = setup_parser()
     args = parser.parse_args()
+    
+    # Configure logging based on --quiet flag
+    if args.quiet:
+        # Set logging to CRITICAL to suppress all output
+        logging.basicConfig(
+            level=logging.CRITICAL,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+    else:
+        # Normal logging configuration
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log"),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
     
     # Import modules that need environment variables
     from two_step_processor_taxonomy import (

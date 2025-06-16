@@ -515,12 +515,11 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
                 markdownResume as cleaned_resume
             FROM dbo.aicandidate WITH (NOLOCK)
             WHERE LastProcessed IS NULL
-                
                 AND markdownresume <> ''
                 AND markdownresume IS NOT NULL
                 AND lastprocessedmarkdown IS NOT NULL
                 AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(day, -3, GETDATE()) AS DATE)
-            ORDER BY datelastmodified desc
+            ORDER BY lastprocessedmarkdown desc
         """
         
         # Execute query with retry logic
