@@ -4,10 +4,15 @@ Single-step resume processor with unified API call
 This version reduces token usage by sending the resume only once
 """
 
+import os
 import logging
 import time
 from datetime import datetime
 import re
+
+# Check if we're in quiet mode and configure logging appropriately
+if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
+    logging.getLogger().setLevel(logging.ERROR)
 
 from two_step_processor_taxonomy import (
     validate_date_format, validate_linkedin_url, 
@@ -22,6 +27,7 @@ from resume_utils import (
     openai
 )
 from skills_detector import get_taxonomy_context
+from error_logger import get_error_logger
 
 def create_unified_prompt(resume_text, userid=None):
     """
@@ -527,11 +533,35 @@ def process_single_resume_unified(resume_data):
         
         # Check if any title fields are still empty
         if not update_data.get('PrimaryTitle') or not update_data.get('SecondaryTitle') or not update_data.get('TertiaryTitle'):
-            logging.error(f"UserID {userid}: Missing titles right before DB update!")
-            logging.error(f"UserID {userid}: Raw response snippet: {unified_text[:300]}")
+            logging.warning(f"UserID {userid}: Missing titles right before DB update!")
+            logging.warning(f"UserID {userid}: Raw response snippet: {unified_text[:300]}")
+            
+            # Log to error file
+            error_logger = get_error_logger()
+            missing_titles = []
+            if not update_data.get('PrimaryTitle'): missing_titles.append('PrimaryTitle')
+            if not update_data.get('SecondaryTitle'): missing_titles.append('SecondaryTitle')
+            if not update_data.get('TertiaryTitle'): missing_titles.append('TertiaryTitle')
+            
+            error_logger.log_candidate_warning(
+                userid=str(userid),
+                warning_type='MISSING_TITLES',
+                warning_details=f"Missing: {', '.join(missing_titles)}",
+                additional_info={'response_snippet': unified_text[:200]}
+            )
         
         # Update database with retry for deadlocks
         update_success = update_candidate_record_with_retry(userid, update_data)
+        
+        if not update_success:
+            # Log database update failure
+            error_logger = get_error_logger()
+            error_logger.log_candidate_error(
+                userid=str(userid),
+                error_type='DB_UPDATE_FAILED',
+                error_details='Failed to update candidate record in database',
+                additional_info={'fields_attempted': len(update_data)}
+            )
         
         total_time = time.time() - total_start_time
         logging.info(f"UserID {userid} unified processing completed in {total_time:.2f}s - DB update: {'Success' if update_success else 'Failed'}")
@@ -549,6 +579,16 @@ def process_single_resume_unified(resume_data):
         logging.error(f"Error processing UserID {userid} with unified approach: {str(e)}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
+        
+        # Log to error file
+        error_logger = get_error_logger()
+        error_logger.log_candidate_error(
+            userid=str(userid),
+            error_type='PROCESSING_EXCEPTION',
+            error_details=str(e),
+            additional_info={'traceback': traceback.format_exc()[:500]}  # Limit traceback length
+        )
+        
         return {
             'userid': userid,
             'success': False,
@@ -558,6 +598,8 @@ def process_single_resume_unified(resume_data):
 
 def run_unified_batch():
     """Process a batch of resumes using the unified single-step approach"""
+    error_logger = get_error_logger()
+    
     try:
         from two_step_processor_taxonomy import BATCH_SIZE, MAX_WORKERS
         
@@ -590,9 +632,18 @@ def run_unified_batch():
                         logging.info(f"UserID {userid} processed successfully in {result.get('processing_time', 0):.2f}s")
                     else:
                         logging.error(f"UserID {userid} processing failed: {result.get('error', 'Unknown error')}")
+                        # Already logged in process_single_resume_unified
                         
                 except Exception as e:
                     logging.error(f"UserID {userid} processing exception: {str(e)}")
+                    
+                    # Log to error file
+                    error_logger.log_candidate_error(
+                        userid=str(userid),
+                        error_type='BATCH_PROCESSING_EXCEPTION',
+                        error_details=str(e)
+                    )
+                    
                     batch_results.append({
                         'userid': userid,
                         'success': False,
@@ -603,6 +654,14 @@ def run_unified_batch():
         success_count = sum(1 for r in batch_results if r.get('success', False))
         total_tokens = sum(r.get('token_count', 0) for r in batch_results)
         total_cost = sum(r.get('cost', 0) for r in batch_results)
+        
+        # Log batch summary to error file
+        failed_count = len(batch_results) - success_count
+        error_logger.log_batch_summary(
+            total_processed=len(batch_results),
+            successful=success_count,
+            failed=failed_count
+        )
         
         logging.info(f"Batch processing complete: {success_count}/{len(batch_results)} successful")
         logging.info(f"Total tokens: {total_tokens}, Estimated cost: ${total_cost:.4f}")

@@ -2,9 +2,14 @@
 Two-step resume processor with skills taxonomy integration
 """
 
+import os
 import logging
 import time
 import concurrent.futures
+
+# Check if we're in quiet mode and configure logging appropriately
+if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
+    logging.getLogger().setLevel(logging.ERROR)
 
 from resume_utils import (
     DEFAULT_MODEL, MAX_TOKENS, DEFAULT_TEMPERATURE,
@@ -14,6 +19,7 @@ from resume_utils import (
 )
 from two_step_prompts_taxonomy import create_step1_prompt, create_step2_prompt
 from date_processor import process_resume_with_enhanced_dates
+from error_logger import get_error_logger
 
 # Application Configuration
 BATCH_SIZE = 50        # Number of resumes to process in a single batch - PRIMARY SETTING
@@ -882,7 +888,7 @@ def log_title_fields(results, userid, step):
     # Log tertiary title
     tertiary = results.get("TertiaryTitle", "NULL")
     if not tertiary or tertiary == "NULL":
-        logging.error(f"UserID {userid} - Step {step}: TertiaryTitle is empty or NULL")
+        logging.warning(f"UserID {userid} - Step {step}: TertiaryTitle is empty or NULL")
     else:
         logging.info(f"UserID {userid} - Step {step}: TertiaryTitle = '{tertiary}'")
 
@@ -1332,11 +1338,35 @@ def process_single_resume_two_step(resume_data):
         
         # Check if any title fields are still empty
         if not update_data.get('PrimaryTitle') or not update_data.get('SecondaryTitle') or not update_data.get('TertiaryTitle'):
-            logging.error(f"UserID {userid}: Missing titles right before DB update!")
-            logging.error(f"UserID {userid}: Raw response snippet: {step1_text[:300]}")
+            logging.warning(f"UserID {userid}: Missing titles right before DB update!")
+            logging.warning(f"UserID {userid}: Raw response snippet: {step1_text[:300]}")
+            
+            # Log to error file
+            error_logger = get_error_logger()
+            missing_titles = []
+            if not update_data.get('PrimaryTitle'): missing_titles.append('PrimaryTitle')
+            if not update_data.get('SecondaryTitle'): missing_titles.append('SecondaryTitle')
+            if not update_data.get('TertiaryTitle'): missing_titles.append('TertiaryTitle')
+            
+            error_logger.log_candidate_warning(
+                userid=str(userid),
+                warning_type='MISSING_TITLES',
+                warning_details=f"Missing: {', '.join(missing_titles)}",
+                additional_info={'response_snippet': step1_text[:200]}
+            )
         
         # Update database with retry for deadlocks
         update_success = update_candidate_record_with_retry(userid, update_data)
+        
+        if not update_success:
+            # Log database update failure
+            error_logger = get_error_logger()
+            error_logger.log_candidate_error(
+                userid=str(userid),
+                error_type='DB_UPDATE_FAILED',
+                error_details='Failed to update candidate record in database',
+                additional_info={'fields_attempted': len(update_data)}
+            )
         
         total_time = time.time() - total_start_time
         logging.info(f"UserID {userid} taxonomy-enhanced two-step processing completed in {total_time:.2f}s - DB update: {'Success' if update_success else 'Failed'}")
@@ -1353,6 +1383,17 @@ def process_single_resume_two_step(resume_data):
     
     except Exception as e:
         logging.error(f"Error processing UserID {userid} with taxonomy-enhanced two-step approach: {str(e)}")
+        
+        # Log to error file
+        error_logger = get_error_logger()
+        import traceback
+        error_logger.log_candidate_error(
+            userid=str(userid),
+            error_type='PROCESSING_EXCEPTION',
+            error_details=str(e),
+            additional_info={'traceback': traceback.format_exc()[:500]}
+        )
+        
         return {
             'userid': userid,
             'success': False,
@@ -1637,11 +1678,26 @@ def process_batch_with_shared_prompts(resume_batch):
                 except Exception as e:
                     userid = resume_data[0]
                     logging.error(f"Exception for UserID {userid}: {str(e)}")
+                    
+                    # Log to error file
+                    error_logger.log_candidate_error(
+                        userid=str(userid),
+                        error_type='BATCH_PROCESSING_EXCEPTION',
+                        error_details=str(e)
+                    )
+                    
+                    results.append({
+                        'userid': userid,
+                        'success': False,
+                        'error': str(e)
+                    })
     
     return results
 
 def run_taxonomy_enhanced_batch():
     """Run a batch of resume processing with the taxonomy-enhanced two-step approach"""
+    error_logger = get_error_logger()
+    
     try:
         # Start timing
         batch_start_time = time.time()
@@ -1772,6 +1828,13 @@ def run_taxonomy_enhanced_batch():
         logging.info(f"- Failed: {len(failed)}/{len(resume_batch)}")
         logging.info(f"- Total input/output tokens: {total_tokens}")
         logging.info(f"- Estimated total cost: ${total_cost:.4f}")
+        
+        # Log batch summary to error file
+        error_logger.log_batch_summary(
+            total_processed=len(resume_batch),
+            successful=len(successful),
+            failed=len(failed)
+        )
         
         return {
             'total_time': batch_processing_time,

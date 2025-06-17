@@ -13,6 +13,7 @@ import time
 import platform
 from datetime import datetime
 import traceback
+from error_logger import get_error_logger
 
 # Configure module logger
 logger = logging.getLogger("resume_parser.db_connection")
@@ -495,6 +496,16 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
                 # Only truncate if there's a limit and value exceeds it
                 if limit and len(value) > limit:
                     logger.warning(f"Truncating field {db_field} from {len(value)} to {limit} characters")
+                    
+                    # Log truncation to error file
+                    error_logger = get_error_logger()
+                    error_logger.log_candidate_warning(
+                        userid=str(userid),
+                        warning_type='DATA_TRUNCATED',
+                        warning_details=f"Field {db_field} truncated from {len(value)} to {limit} characters",
+                        additional_info={'original_length': len(value), 'truncated_to': limit}
+                    )
+                    
                     params.append(value[:limit])
                 else:
                     params.append(value)
@@ -521,6 +532,16 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
             
             if not success:
                 conn.close()
+                
+                # Log database error to error file
+                error_logger = get_error_logger()
+                error_logger.log_candidate_error(
+                    userid=str(userid),
+                    error_type='DB_UPDATE_ERROR',
+                    error_details=message,
+                    additional_info={'operation': 'UPDATE', 'fields': len(fields)}
+                )
+                
                 return False, f"Failed to update record: {message}"
             
             if result == 0:

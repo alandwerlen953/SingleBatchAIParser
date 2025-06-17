@@ -20,6 +20,7 @@ from db_connection import (
     update_candidate_record,
     test_connection as test_db_connection
 )
+from error_logger import get_error_logger
 
 # Load environment variables
 load_dotenv()
@@ -251,6 +252,15 @@ def update_candidate_record_with_retry(userid, parsed_data, max_retries=3):
         if issues:
             logging.warning(f"Found {len(issues)} potential issues with fields for UserID {userid}")
             # Continue anyway - the issues are logged and db_connection will handle them
+            
+            # Log issues to error file
+            error_logger = get_error_logger()
+            for issue in issues[:5]:  # Log first 5 issues to avoid spam
+                error_logger.log_candidate_warning(
+                    userid=str(userid),
+                    warning_type='FIELD_VALIDATION_ISSUE',
+                    warning_details=issue
+                )
         
         # Use the enhanced update function from the db_connection module
         success, message = update_candidate_record(userid, parsed_data, max_retries=max_retries)
@@ -259,6 +269,15 @@ def update_candidate_record_with_retry(userid, parsed_data, max_retries=3):
             logging.info(f"Successfully updated record for UserID {userid}")
         else:
             logging.error(f"Failed to update record for UserID {userid}: {message}")
+            
+            # Log to error file
+            error_logger = get_error_logger()
+            error_logger.log_candidate_error(
+                userid=str(userid),
+                error_type='DB_UPDATE_FAILED',
+                error_details=message,
+                additional_info={'issues_found': len(issues) if 'issues' in locals() else 0}
+            )
         
         return success
     
