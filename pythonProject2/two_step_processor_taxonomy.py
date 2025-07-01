@@ -1382,22 +1382,39 @@ def process_single_resume_two_step(resume_data):
         }
     
     except Exception as e:
-        logging.error(f"Error processing UserID {userid} with taxonomy-enhanced two-step approach: {str(e)}")
+        error_message = str(e)
+        logging.error(f"Error processing UserID {userid} with taxonomy-enhanced two-step approach: {error_message}")
+        
+        # Check for specific OpenAI errors
+        error_type = 'PROCESSING_EXCEPTION'
+        if 'rate_limit' in error_message.lower() or '429' in error_message:
+            error_type = 'RATE_LIMIT_ERROR'
+            logging.error(f"Rate limit error for UserID {userid}: {error_message}")
+        elif 'timeout' in error_message.lower():
+            error_type = 'TIMEOUT_ERROR'
+            logging.error(f"Timeout error for UserID {userid}: {error_message}")
+        elif 'api' in error_message.lower() and 'key' in error_message.lower():
+            error_type = 'API_KEY_ERROR'
+            logging.error(f"API key error for UserID {userid}: {error_message}")
+        elif '503' in error_message or 'service_unavailable' in error_message.lower():
+            error_type = 'SERVICE_UNAVAILABLE'
+            logging.error(f"OpenAI service unavailable for UserID {userid}: {error_message}")
         
         # Log to error file
         error_logger = get_error_logger()
         import traceback
         error_logger.log_candidate_error(
             userid=str(userid),
-            error_type='PROCESSING_EXCEPTION',
-            error_details=str(e),
+            error_type=error_type,
+            error_details=error_message,
             additional_info={'traceback': traceback.format_exc()[:500]}
         )
         
         return {
             'userid': userid,
             'success': False,
-            'error': str(e),
+            'error': error_message,
+            'error_type': error_type,
             'token_count': num_tokens_from_string(resume_text) if 'resume_text' in locals() else 0
         }
 

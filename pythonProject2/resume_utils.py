@@ -58,8 +58,9 @@ def num_tokens_from_string(string, encoding_name="cl100k_base"):
         # Try to get encoding for the model first
         try:
             encoding = tiktoken.encoding_for_model(DEFAULT_MODEL)
-        except KeyError:
+        except KeyError as e:
             # If that fails, use the explicit get_encoding method
+            logging.debug(f"Could not get encoding for model {DEFAULT_MODEL}: {str(e)}. Using fallback encoding {encoding_name}")
             encoding = tiktoken.get_encoding(encoding_name)
         
         num_tokens = len(encoding.encode(string))
@@ -92,7 +93,7 @@ def apply_token_truncation(messages, max_input_tokens=120000):
             if tokens_to_remove >= user_tokens:
                 # Extreme case - just keep minimal text
                 truncated_messages[i]["content"] = "Resume text was too large and had to be removed."
-                logging.warning("Resume text was completely truncated due to excessive size.")
+                logging.error("Resume text was completely truncated due to excessive size - data loss occurred")
             else:
                 # Calculate proportion to keep
                 keep_ratio = (user_tokens - tokens_to_remove) / user_tokens
@@ -106,7 +107,7 @@ def apply_token_truncation(messages, max_input_tokens=120000):
                         "\n\n... [content truncated due to length] ...\n\n" + 
                         message["content"][-half_keep:]
                     )
-                    logging.warning(f"Resume text was truncated from {user_tokens} to approximately {user_tokens - tokens_to_remove} tokens.")
+                    logging.error(f"Resume text was truncated from {user_tokens} to approximately {user_tokens - tokens_to_remove} tokens - potential data loss")
             
             break  # Only truncate one message
             
@@ -152,7 +153,8 @@ def is_valid_sql_date(date_str):
         import datetime
         datetime.datetime.strptime(date_str, "%Y-%m-%d")
         return True
-    except ValueError:
+    except ValueError as e:
+        logging.debug(f"Invalid date format '{date_str}': {str(e)}")
         return False
 
 def diagnose_database_fields(userid, parsed_data):
@@ -186,8 +188,8 @@ def diagnose_database_fields(userid, parsed_data):
                     import datetime
                     datetime.datetime.strptime(value, "%Y-%m-%d")
                     logging.info(f"[DB DIAGNOSE] Date field {field} has valid date format: {value}")
-                except ValueError:
-                    logging.warning(f"[DB DIAGNOSE] Date field {field} has invalid date format: {value}")
+                except ValueError as e:
+                    logging.warning(f"[DB DIAGNOSE] Date field {field} has invalid date format: {value} - {str(e)}")
                     issues_found.append(f"Date field {field} has invalid format: {value}")
     
     # Check numeric fields
@@ -199,8 +201,8 @@ def diagnose_database_fields(userid, parsed_data):
                 try:
                     float_val = float(value)
                     logging.info(f"[DB DIAGNOSE] {field} = '{value}' (valid number: {float_val})")
-                except ValueError:
-                    issue = f"{field} value '{value}' is not a valid number"
+                except ValueError as e:
+                    issue = f"{field} value '{value}' is not a valid number: {str(e)}"
                     issues_found.append(issue)
                     logging.warning(f"[DB DIAGNOSE] {issue}")
     

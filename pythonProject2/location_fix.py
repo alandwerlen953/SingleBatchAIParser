@@ -118,10 +118,10 @@ This will properly handle international locations by:
     return improved_instructions
 
 if __name__ == "__main__":
-    print("Location fix utility - choose an option:")
-    print("1. Fix existing location entries containing NULL")
-    print("2. Show improved location prompt instructions")
-    print("3. Run both options")
+    logging.info("Location fix utility - choose an option:")
+    logging.info("1. Fix existing location entries containing NULL")
+    logging.info("2. Show improved location prompt instructions")
+    logging.info("3. Run both options")
     
     choice = input("Enter your choice (1-3): ")
     
@@ -133,4 +133,4 @@ if __name__ == "__main__":
         fix_location_entries()
         update_location_prompt_instructions()
     else:
-        print("Invalid choice")
+        logging.error("Invalid choice")

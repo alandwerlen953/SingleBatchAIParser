@@ -86,7 +86,9 @@ def parse_resume_date(date_string: str, allow_future: bool = False) -> Tuple[Opt
                 
                 return date_obj, format_info['confidence'], cleaned_string
                 
-            except ValueError:
+            except ValueError as e:
+                # Log parsing attempt failure at debug level
+                logging.debug(f"Failed to parse '{cleaned_string}' with format '{format_info['format']}': {str(e)}")
                 # If this format failed, try the next one
                 continue
     
