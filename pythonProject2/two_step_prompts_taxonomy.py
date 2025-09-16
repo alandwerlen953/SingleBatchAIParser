@@ -106,6 +106,13 @@ def create_step1_prompt(resume_text, userid=None):
         },
         {
             "role": "system",
+            "content": "Education/Degrees are typically located at the top or bottom of resumes in an EDUCATION section."
+                       "For Bachelor's Degree: Look for bachelor's/undergraduate degrees including abbreviations like: BS, B.S., BA, B.A., BEng, BBA, etc."
+                       "For Master's Degree: Look for master's/graduate degrees including abbreviations like: MS, M.S., MA, M.A., MBA, MEng, MSc, MFA, etc."
+                       "Extract the complete degree information including field of study and institution when available."
+        },
+        {
+            "role": "system",
             "content": "Abbreviate the state if it is not already done so."
                        "When needing to do a list, separate by commas."
                        "If there is no last name or the last name is one letter, look in their email for their last name."
