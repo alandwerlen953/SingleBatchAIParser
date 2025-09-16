@@ -209,7 +209,8 @@ def extract_fields_directly(response_text):
     personal_info_patterns = {
         "Address": [
             r"Their street address:\s*(.+)",
-            r"Street Address:\s*(.+)"
+            r"Street Address:\s*(.+)",
+            r"Address:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "City": [
             r"Their City:\s*(.+)",
@@ -223,27 +224,32 @@ def extract_fields_directly(response_text):
             r"Their Zip Code:\s*(.+)",
             r"Zip Code:\s*(.+)",
             r"Their Zip:\s*(.+)",
-            r"Zip:\s*(.+)"
+            r"Zip:\s*(.+)",
+            r"Zipcode:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Phone1": [
             r"Their Phone Number:\s*(.+)",
             r"Phone Number 1:\s*(.+)",
-            r"Their Phone Number 1:\s*(.+)"
+            r"Their Phone Number 1:\s*(.+)",
+            r"Phone1:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Phone2": [
             r"Their Second Phone Number:\s*(.+)",
             r"Phone Number 2:\s*(.+)",
-            r"Their Phone Number 2:\s*(.+)"  
+            r"Their Phone Number 2:\s*(.+)",
+            r"Phone2:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Email": [
             r"Their Email:\s*(.+)",
             r"Email 1:\s*(.+)",
-            r"Their Email 1:\s*(.+)"
+            r"Their Email 1:\s*(.+)",
+            r"Email:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Email2": [
             r"Their Second Email:\s*(.+)",
             r"Email 2:\s*(.+)",
-            r"Their Email 2:\s*(.+)"
+            r"Their Email 2:\s*(.+)",
+            r"Email2:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "FirstName": [
             r"Their First Name:\s*(.+)",
@@ -258,16 +264,19 @@ def extract_fields_directly(response_text):
             r"Last Name:\s*(.+)"
         ],
         "Linkedin": [
-            r"Their Linkedin URL:\s*(.+)", 
-            r"LinkedIn URL:\s*(.+)"
+            r"Their Linkedin URL:\s*(.+)",
+            r"LinkedIn URL:\s*(.+)",
+            r"LinkedIn:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Bachelors": [
             r"Their Bachelor's Degree:\s*(.+)",
-            r"Bachelor's Degree:\s*(.+)"
+            r"Bachelor's Degree:\s*(.+)",
+            r"Bachelors:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Masters": [
             r"Their Master's Degree:\s*(.+)",
-            r"Master's Degree:\s*(.+)"
+            r"Master's Degree:\s*(.+)",
+            r"Masters:\s*(.+)"  # Add pattern for single_step_processor format
         ],
         "Certifications": [
             r"Their Certifications Listed:\s*(.+)",
