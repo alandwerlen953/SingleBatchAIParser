@@ -47,7 +47,7 @@ if not api_key:
     logging.error("API key is not set in the environment variables.")
 
 # Default model and configuration
-DEFAULT_MODEL = "gpt-4o-mini-2024-07-18"
+DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
 MAX_TOKENS = 16000
 DEFAULT_TEMPERATURE = 0
 

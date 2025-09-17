@@ -253,7 +253,8 @@ def extract_fields_directly(response_text):
         ],
         "FirstName": [
             r"Their First Name:\s*(.+)",
-            r"First Name:\s*(.+)"
+            r"First Name:\s*(.+)",
+            r"- First Name:\s*(.+)"  # Add pattern with hyphen prefix for single_step_processor
         ],
         "MiddleName": [
             r"Their Middle Name:\s*(.+)",
@@ -589,11 +590,11 @@ def extract_step2_fields_directly(response_text):
     
     # If we didn't find the formatted section, look for the common Q&A format
     qa_hardware_patterns = [
-        (r"What physical hardware do they talk about using the most\?:\s*(.+?)(?:\n|$)", "Hardware1"),
-        (r"What physical hardware do they talk about using the second most\?:\s*(.+?)(?:\n|$)", "Hardware2"),
-        (r"What physical hardware do they talk about using the third most\?:\s*(.+?)(?:\n|$)", "Hardware3"),
-        (r"What physical hardware do they talk about using the fourth most\?:\s*(.+?)(?:\n|$)", "Hardware4"),
-        (r"What physical hardware do they talk about using the fifth most\?:\s*(.+?)(?:\n|$)", "Hardware5")
+        (r"(?:- )?What physical hardware do they talk about using the most\?:\s*(.+?)(?:\n|$)", "Hardware1"),
+        (r"(?:- )?What physical hardware do they talk about using the second most\?:\s*(.+?)(?:\n|$)", "Hardware2"),
+        (r"(?:- )?What physical hardware do they talk about using the third most\?:\s*(.+?)(?:\n|$)", "Hardware3"),
+        (r"(?:- )?What physical hardware do they talk about using the fourth most\?:\s*(.+?)(?:\n|$)", "Hardware4"),
+        (r"(?:- )?What physical hardware do they talk about using the fifth most\?:\s*(.+?)(?:\n|$)", "Hardware5")
     ]
     
     # Try to extract each hardware item using Q&A format
@@ -627,27 +628,27 @@ def extract_step2_fields_directly(response_text):
             r"Third most used programming language:\s*(.+)"
         ],
         "SoftwareApp1": [
-            r"What software do they talk about using the most\?:\s*(.+)",
+            r"(?:- )?What software do they talk about using the most\?:\s*(.+)",
             r"Primary software application:\s*(.+)",
             r"Most used software:\s*(.+)"
         ],
         "SoftwareApp2": [
-            r"What software do they talk about using the second most\?:\s*(.+)",
+            r"(?:- )?What software do they talk about using the second most\?:\s*(.+)",
             r"Secondary software application:\s*(.+)",
             r"Second most used software:\s*(.+)"
         ],
         "SoftwareApp3": [
-            r"What software do they talk about using the third most\?:\s*(.+)",
+            r"(?:- )?What software do they talk about using the third most\?:\s*(.+)",
             r"Tertiary software application:\s*(.+)",
             r"Third most used software:\s*(.+)"
         ],
         "SoftwareApp4": [
-            r"What software do they talk about using the fourth most\?:\s*(.+)",
+            r"(?:- )?What software do they talk about using the fourth most\?:\s*(.+)",
             r"Fourth software application:\s*(.+)",
             r"Fourth most used software:\s*(.+)"
         ],
         "SoftwareApp5": [
-            r"What software do they talk about using the fifth most\?:\s*(.+)",
+            r"(?:- )?What software do they talk about using the fifth most\?:\s*(.+)",
             r"Fifth software application:\s*(.+)",
             r"Fifth most used software:\s*(.+)"
         ],
@@ -1160,8 +1161,8 @@ def process_single_resume_two_step(resume_data):
         step1_response = openai.chat.completions.create(
             model=MODEL,
             messages=step1_messages,
-            temperature=DEFAULT_TEMPERATURE,
-            max_tokens=MAX_TOKENS
+            temperature=1,  # New model only supports default temperature of 1
+            max_completion_tokens=MAX_TOKENS  # Use max_completion_tokens for new model
         )
         
         step1_time = time.time() - step1_start_time
@@ -1209,8 +1210,8 @@ def process_single_resume_two_step(resume_data):
         step2_response = openai.chat.completions.create(
             model=MODEL,
             messages=step2_messages,
-            temperature=0.5,  # Higher temperature to encourage more diverse hardware identification
-            max_tokens=MAX_TOKENS
+            temperature=1,  # New model only supports default temperature of 1
+            max_completion_tokens=MAX_TOKENS  # Use max_completion_tokens for new model
         )
         
         step2_time = time.time() - step2_start_time

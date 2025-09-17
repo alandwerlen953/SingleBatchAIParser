@@ -389,8 +389,8 @@ def process_single_resume_unified(resume_data):
         unified_response = openai.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=unified_messages,
-            temperature=0.3,  # Using 0.3 as a midpoint between step1 and step2 temperatures
-            max_tokens=MAX_TOKENS
+            temperature=1,  # New model only supports default temperature of 1
+            max_completion_tokens=MAX_TOKENS  # Use max_completion_tokens for new model
         )
         
         unified_time = time.time() - unified_start_time

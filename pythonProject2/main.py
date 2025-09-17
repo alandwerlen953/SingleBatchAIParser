@@ -28,7 +28,11 @@ if '--quiet' in sys.argv:
     # Set environment variable so imported modules know to be quiet
     os.environ['QUIET_MODE'] = '1'
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv():
+        pass  # Skip if dotenv not available
 
 # Don't configure logging here - will be done after parsing args
 
@@ -134,18 +138,23 @@ def main():
         # Single user mode
         if args.userid:
             logging.info(f"Processing single user with ID: {args.userid}")
-            
-            # Get the resume for this user
-            from process_single_user import process_with_detailed_logging
-            
+
             # Fetch the resume
             resume_data = get_resume_by_userid(args.userid)
-            
+
             if resume_data:
                 userid, resume_text = resume_data
-                # Process with detailed logging
-                result = process_with_detailed_logging(userid, resume_text)
-                
+
+                # Use unified processor if --unified flag is set
+                if args.unified:
+                    logging.info(f"Using unified single-step processor for user {args.userid}")
+                    from single_step_processor import process_single_resume_unified
+                    result = process_single_resume_unified((userid, resume_text))
+                else:
+                    logging.info(f"Using two-step processor for user {args.userid}")
+                    from process_single_user import process_with_detailed_logging
+                    result = process_with_detailed_logging(userid, resume_text)
+
                 if result.get('success', False):
                     logging.info(f"Successfully processed resume for user {args.userid}")
                 else:
