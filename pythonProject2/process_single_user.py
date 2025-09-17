@@ -52,8 +52,8 @@ def process_with_detailed_logging(userid, resume_text):
         step1_response = openai.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=step1_messages,
-            temperature=1,  # New model only supports default temperature of 1
-            max_completion_tokens=MAX_TOKENS  # Use max_completion_tokens for new model
+            temperature=1  # New model only supports default temperature of 1
+            # Note: gpt-5-mini returns empty responses with max_completion_tokens
         )
         
         # Get and parse step 1 response
@@ -83,8 +83,8 @@ def process_with_detailed_logging(userid, resume_text):
         step2_response = openai.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=step2_messages,
-            temperature=1,  # New model only supports default temperature of 1
-            max_completion_tokens=MAX_TOKENS  # Use max_completion_tokens for new model
+            temperature=1  # New model only supports default temperature of 1
+            # Note: gpt-5-mini returns empty responses with max_completion_tokens
         )
         
         # Get and parse step 2 response

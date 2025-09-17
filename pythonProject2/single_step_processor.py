@@ -389,8 +389,8 @@ def process_single_resume_unified(resume_data):
         unified_response = openai.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=unified_messages,
-            temperature=1,  # New model only supports default temperature of 1
-            max_completion_tokens=MAX_TOKENS  # Use max_completion_tokens for new model
+            temperature=1  # New model only supports default temperature of 1
+            # Note: gpt-5-mini returns empty responses with max_completion_tokens
         )
         
         unified_time = time.time() - unified_start_time
