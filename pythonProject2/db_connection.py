@@ -621,7 +621,7 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
         # Removed TOP clause to process all matching records
         # Fixed date comparison to use date-only comparison for better matching
         query = f"""
-            SELECT 
+            SELECT
                 userid,
                 markdownResume as cleaned_resume
             FROM dbo.aicandidate WITH (NOLOCK)
@@ -629,12 +629,18 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
                 AND markdownresume <> ''
                 AND markdownresume IS NOT NULL
                 AND lastprocessedmarkdown IS NOT NULL
-                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(day, -3, GETDATE()) AS DATE)
+                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -3, GETDATE()) AS DATE)
             ORDER BY lastprocessedmarkdown desc
         """
-        
+
+        logger.info(f"Executing SQL query to fetch unprocessed resumes...")
+        query_start_time = time.time()
+
         # Execute query with retry logic
         success, result, message = execute_query_with_retry(conn, query, retries=max_retries)
+
+        query_elapsed = time.time() - query_start_time
+        logger.info(f"SQL query completed in {query_elapsed:.2f} seconds")
         
         if not success:
             logger.error(f"Failed to get resume batch: {message}")
@@ -645,20 +651,31 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
         if result:
             # Log all userids found by the query
             found_userids = [row[0] for row in result]
-            logger.info(f"SQL query found {len(found_userids)} total records: {sorted(found_userids)}")
+            logger.info(f"SQL query returned {len(found_userids)} total records")
+            logger.info(f"First 20 UserIDs: {sorted(found_userids[:20])}{'...' if len(found_userids) > 20 else ''}")
             
-            for row in result:
+            process_start_time = time.time()
+            for idx, row in enumerate(result):
                 userid = row[0]
                 cleaned_resume = row[1]
-                
+
+                # Log progress every 100 records
+                if idx > 0 and idx % 100 == 0:
+                    logger.info(f"Processing record {idx}/{len(result)}...")
+
                 if cleaned_resume and len(str(cleaned_resume).strip()) > 0:
                     resume_batch.append((userid, cleaned_resume))
-                    logger.info(f"Added UserID {userid} to batch (resume length: {len(cleaned_resume)})")
+                    # Only log detailed info for first few
+                    if len(resume_batch) <= 5:
+                        logger.info(f"Added UserID {userid} to batch (resume length: {len(cleaned_resume)})")
                 else:
                     logger.warning(f"Empty resume text for UserID {userid} - skipping")
                     get_resume_batch_with_retry.skipped_userids.add(userid)
+
+            process_elapsed = time.time() - process_start_time
+            logger.info(f"Processed {len(result)} records in {process_elapsed:.2f} seconds")
             
-            logger.info(f"Retrieved {len(resume_batch)} valid resumes for processing")
+            logger.info(f"Final batch: {len(resume_batch)} valid resumes ready for processing (skipped {len(get_resume_batch_with_retry.skipped_userids)} empty resumes)")
         else:
             logger.info("No unprocessed records found")
             get_resume_batch_with_retry.skipped_userids.clear()

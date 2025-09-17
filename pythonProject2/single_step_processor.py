@@ -605,37 +605,70 @@ def run_unified_batch():
         
         # Get a batch of resumes
         logging.info("Fetching ALL unprocessed resumes matching criteria...")
+        fetch_start_time = time.time()
         resume_batch = get_resume_batch(BATCH_SIZE)
-        
+        fetch_time = time.time() - fetch_start_time
+
         if not resume_batch:
             logging.info("No unprocessed resumes found in database")
             return []
-            
-        logging.info(f"Retrieved {len(resume_batch)} unprocessed resumes for batch processing")
+
+        logging.info(f"Retrieved {len(resume_batch)} unprocessed resumes in {fetch_time:.2f}s")
+        logging.info(f"UserIDs to process: {[r[0] for r in resume_batch[:10]]}{'...' if len(resume_batch) > 10 else ''}")
         
         # Process in parallel
         batch_results = []
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             # Submit jobs
+            logging.info(f"Submitting {len(resume_batch)} jobs to ThreadPoolExecutor with {MAX_WORKERS} workers...")
+            submit_start_time = time.time()
             future_to_userid = {executor.submit(process_single_resume_unified, resume_data): resume_data[0] for resume_data in resume_batch}
-            
+            submit_time = time.time() - submit_start_time
+            logging.info(f"All {len(future_to_userid)} futures submitted in {submit_time:.2f}s")
+
             # Collect results as they complete
+            completed_count = 0
+            total_futures = len(future_to_userid)
+            logging.info(f"Starting to process {total_futures} futures...")
+
             for future in concurrent.futures.as_completed(future_to_userid):
+                completed_count += 1
                 userid = future_to_userid[future]
+
+                # Log progress every 10 completions or at important milestones
+                if completed_count % 10 == 0 or completed_count == 1 or completed_count == total_futures:
+                    logging.info(f"Progress: {completed_count}/{total_futures} futures completed ({completed_count*100/total_futures:.1f}%)")
+
                 try:
-                    result = future.result()
+                    result = future.result(timeout=300)  # 5 minute timeout per future
                     batch_results.append(result)
-                    
+
                     # Log success/failure
                     if result.get('success', False):
-                        logging.info(f"UserID {userid} processed successfully in {result.get('processing_time', 0):.2f}s")
+                        logging.info(f"[{completed_count}/{total_futures}] UserID {userid} SUCCESS in {result.get('processing_time', 0):.2f}s")
                     else:
-                        logging.error(f"UserID {userid} processing failed: {result.get('error', 'Unknown error')}")
+                        logging.error(f"[{completed_count}/{total_futures}] UserID {userid} FAILED: {result.get('error', 'Unknown error')}")
                         # Already logged in process_single_resume_unified
                         
+                except concurrent.futures.TimeoutError:
+                    logging.error(f"[{completed_count}/{total_futures}] UserID {userid} TIMEOUT after 5 minutes")
+
+                    # Log to error file
+                    error_logger.log_candidate_error(
+                        userid=str(userid),
+                        error_type='BATCH_PROCESSING_TIMEOUT',
+                        error_details='Future timed out after 5 minutes'
+                    )
+
+                    batch_results.append({
+                        'userid': userid,
+                        'success': False,
+                        'error': 'Processing timeout'
+                    })
+
                 except Exception as e:
-                    logging.error(f"UserID {userid} processing exception: {str(e)}")
+                    logging.error(f"[{completed_count}/{total_futures}] UserID {userid} EXCEPTION: {str(e)}")
                     
                     # Log to error file
                     error_logger.log_candidate_error(
@@ -650,6 +683,9 @@ def run_unified_batch():
                         'error': str(e)
                     })
         
+        # Final summary
+        logging.info(f"All {total_futures} futures completed. Summarizing results...")
+
         # Summarize results
         success_count = sum(1 for r in batch_results if r.get('success', False))
         total_tokens = sum(r.get('token_count', 0) for r in batch_results)
