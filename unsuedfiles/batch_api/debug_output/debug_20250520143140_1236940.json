@@ -1,0 +1,26 @@
+{
+  "userid": 1236940,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Geology",
+    "SecondaryCategory": "Data Analysis",
+    "ProjectTypes": "Reservoir evaluation, exploration portfolio development, geological modeling",
+    "Specialty": "Geological evaluation and reservoir characterization",
+    "Summary": "Sanzhar Begimbetov is a skilled geologist with four years of industry experience specializing in geological evaluation and reservoir characterization. He has a proven track record of enhancing company value through innovative technical solutions, including the development of predictive models and successful exploration portfolios. Proficient in Petrel and Python, Sanzhar is committed to driving growth and innovation in the oil and gas industry.",
+    "LengthinUS": "1",
+    "YearsofExperience": "4",
+    "AvgTenure": "2"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4614,
+    "completion_tokens": 432,
+    "total_tokens": 5137,
+    "processing_time_seconds": 8.168698787689209,
+    "cost": {
+      "input_cost": 0.004614,
+      "output_cost": 0.001296,
+      "total_cost": 0.00591
+    }
+  }
+}

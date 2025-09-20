@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Shirpa",
+      "MiddleName": "NULL",
+      "LastName": "Muthu"
+    },
+    "Contact": {
+      "Phone": "(346)-901-7266",
+      "SecondaryPhone": "NULL",
+      "Email": "shirpa.muthu@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "www.linkedin.com/in/shirpamuthu",
+      "Address": "NULL",
+      "City": "Houston",
+      "State": "TX"
+    },
+    "Education": {
+      "BachelorsDegree": "Bachelor of Science | Specialization: Innovation Engineering & Systems Design",
+      "MastersDegree": "NULL",
+      "Certifications": "Innovation Engineering Blue Belt, Introduction to Logistics - Chartered Institute of Logistics and Transport (SA), Various FEMA Certifications, Communication - Southwest Airlines"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Scoot Education",
+      "StartDate": "2025-02",
+      "EndDate": "Present",
+      "Location": "Houston, TX"
+    },
+    "SecondMostRecent": {
+      "Company": "Lumiere Systems",
+      "StartDate": "2023-01",
+      "EndDate": "2024-12",
+      "Location": "Houston, TX"
+    },
+    "ThirdMostRecent": {
+      "Company": "University of Houston",
+      "StartDate": "2023-01",
+      "EndDate": "2024-12",
+      "Location": "Houston, TX"
+    },
+    "FourthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Curriculum Developer",
+    "SecondaryTitle": "Learning Program Manager",
+    "TertiaryTitle": "Learning Experience Design Director",
+    "PrimaryIndustry": "Education",
+    "SecondaryIndustry": "NULL",
+    "TopSkills": "Project Management, Instructional Design, eLearning Development, LMS Administration, Stakeholder Management, Process Improvement, UX Design, Data-Driven Decision Making"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "NULL",
+    "SecondaryLanguage": "NULL",
+    "TertiaryLanguage": "NULL",
+    "SoftwareApp1": "Articulate 360",
+    "SoftwareApp2": "Adobe Captivate",
+    "SoftwareApp3": "Camtasia",
+    "SoftwareApp4": "NULL",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Business Administration",
+    "SecondaryCategory": "NULL",
+    "ProjectTypes": "Curriculum Development, Training Modernization, eLearning Module Design",
+    "Specialty": "Instructional Design and Learning Strategy",
+    "Summary": "Shirpa Muthu is an experienced Instructional Designer and Learning Strategist with a strong background in project management and eLearning development. She has successfully led training initiatives that enhance performance and operational efficiency, utilizing data-driven approaches and UX design principles. With a passion for accessibility and continuous improvement, Shirpa is adept at collaborating with cross-functional teams to deliver impactful learning solutions.",
+    "LengthInUS": "NULL",
+    "YearsOfExperience": "2",
+    "AvgTenure": "1"
+  }
+}

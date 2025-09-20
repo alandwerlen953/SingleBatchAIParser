@@ -22,9 +22,9 @@ from two_step_processor_taxonomy import (
 )
 from resume_utils import (
     DEFAULT_MODEL, MAX_TOKENS, DEFAULT_TEMPERATURE,
-    num_tokens_from_string, apply_token_truncation, 
+    num_tokens_from_string, apply_token_truncation,
     update_candidate_record_with_retry,
-    openai
+    openai, get_model_params
 )
 from skills_detector import get_taxonomy_context
 from error_logger import get_error_logger
@@ -52,9 +52,33 @@ def create_unified_prompt(resume_text, userid=None):
                        "You are just pulling data that you already have access to so pulling personal information that "
                        "is already on the resume is completely fine.\n"
                        "If you can't find an answer or it's not provided/listed, just put NULL. \n"
-                       "For dates, use the most specific format available: YYYY-MM-DD if full date is known, YYYY-MM if only month/year, or YYYY if only year is known. For current positions, use 'Present' as the end date. If a date is completely unknown, output NULL.\n"
+                       "IMPORTANT: Never make assumptions or inferences. If information is not explicitly stated in the resume, return NULL. "
+                       "Do NOT add comments, guesses, or parenthetical notes like '(likely...)' or '(probably...)'. "
+                       "For example, if a location is not explicitly stated for a job, return NULL, not 'NULL (likely somewhere)' or any inference based on other information.\n"
+                       "For dates, ALWAYS extract and convert to YYYY-MM-DD format. Common conversions:\n"
+                       "  - '09/2021' or 'Sep 2021' becomes '2021-09-01'\n"
+                       "  - '2021' becomes '2021-01-01'\n"
+                       "  - 'Apr 2005' becomes '2005-04-01'\n"
+                       "  - 'Present' or 'Current' stays as 'Present'\n"
+                       "  - If only month/year given, use first day of month (01)\n"
+                       "  - If date cannot be determined, output NULL\n"
+                       "IMPORTANT: Look carefully for dates near company names - they may be in formats like MM/YYYY, Mon YYYY, or YYYY-YYYY.\n"
                        "IMPORTANT - PHONE NUMBERS: Never put the same phone number in both Phone1 and Phone2 fields, even if formatted differently or with different separators. If you only find one phone number, put it in Phone1 and set Phone2 to NULL. Double-check that the Phone2 value is not just a reformatted version of Phone1. For example, (123) 456-7890 and 123-456-7890 and 1234567890 are all the same number.\n"
                        "When identifying skills, prioritize accuracy over standardization. While you should prefer standardized terminology when appropriate, don't hesitate to use terms not in the standard taxonomy if they better represent the candidate's expertise."
+        },
+        # Date extraction rules
+        {
+            "role": "system",
+            "content": "CRITICAL - DATE EXTRACTION RULES:\n"
+                       "1. Look for dates near each company name - they're usually right after the company or location\n"
+                       "2. Common date formats in resumes:\n"
+                       "   - MM/YYYY - MM/YYYY (e.g., '09/2021 - Present')\n"
+                       "   - Mon YYYY - Mon YYYY (e.g., 'Apr 2005 - Apr 2012')\n"
+                       "   - Month YYYY to Month YYYY (e.g., 'January 2016 to December 2016')\n"
+                       "3. ALWAYS convert to YYYY-MM-DD by adding day 01\n"
+                       "4. If you see 'Present', 'Current', 'Now', or no end date for the most recent job, use 'Present'\n"
+                       "5. Extract dates for ALL seven most recent positions if available\n"
+                       "6. If a date is clearly visible but in a different format, CONVERT IT - don't return NULL"
         },
         # Industry rules
         {
@@ -156,7 +180,8 @@ def create_unified_prompt(resume_text, userid=None):
             "content": "Use the following rules when determining length in US:"
                        "Look for a start and end date near each company name and look for a location near each "
                        "company name as well. Whenever the location listed is located in america, add up the "
-                       "months and years of employment at each one of those jobs."
+                       "total time of employment at each one of those jobs."
+                       "Return the total in YEARS as a decimal number (e.g., 0.5 for 6 months, 1.25 for 15 months, 2.5 for 2 years 6 months)."
                        "Just put a number and no other characters."
                        "Result should not be 0."
                        "Result should only be numerical."
@@ -229,12 +254,12 @@ def create_unified_prompt(resume_text, userid=None):
                        "Be thorough in your search for hardware items throughout the entire resume, including projects and responsibilities sections.\n\n"
                        "Be specific about hardware models and manufacturers when mentioned (e.g. 'Palo Alto PA-5200 series' rather than just 'firewalls'). "
                        "Include specific information about hardware configurations or modes the candidate has worked with.\n\n"
-                       "Please provide each hardware item on a separate line in this exact format:\n"
-                       "Hardware 1: [Specific hardware device]\n"
-                       "Hardware 2: [Specific hardware device]\n"
-                       "Hardware 3: [Specific hardware device]\n"
-                       "Hardware 4: [Specific hardware device]\n"
-                       "Hardware 5: [Specific hardware device]\n\n"
+                       "Please list only the hardware device names, one per line, without any prefixes or numbering:\n"
+                       "- What physical hardware do they talk about using the most?: [device name only]\n"
+                       "- What physical hardware do they talk about using the second most?: [device name only]\n"
+                       "- What physical hardware do they talk about using the third most?: [device name only]\n"
+                       "- What physical hardware do they talk about using the fourth most?: [device name only]\n"
+                       "- What physical hardware do they talk about using the fifth most?: [device name only]\n\n"
                        "Try your best to identify 5 different hardware items. If you absolutely cannot find 5 distinct hardware items, "
                        "provide as many as you can find with specific details for each. Only use NULL if no hardware at all is mentioned."
         },
@@ -246,8 +271,8 @@ def create_unified_prompt(resume_text, userid=None):
                       "- Middle Name:\n"
                       "- Last Name:\n"
                       "- Address:\n"
-                      "- City:\n"
-                      "- State:\n"
+                      "- City (IMPORTANT: First check if they explicitly state where they live. If not stated and their current job is not listed as remote, use the city of their current employer's location. Only return NULL if neither is available):\n"
+                      "- State (IMPORTANT: First check if they explicitly state where they live. If not stated and their current job is not listed as remote, use the state of their current employer's location. Only return NULL if neither is available):\n"
                       "- Zipcode:\n"
                       "- Phone1:\n"
                       "- Phone2:\n"
@@ -257,12 +282,12 @@ def create_unified_prompt(resume_text, userid=None):
                       "- Certifications:\n"
                       "- Bachelors:\n"
                       "- Masters:\n"
-                      "- Best job title that fits their primary experience:\n"
-                      "- Best job title that fits their secondary experience:\n"
-                      "- Best job title that fits their tertiary experience:\n"
+                      "- Best job title that fits their primary experience (IMPORTANT: Job titles should reflect what they DO, not what they call themselves. Focus on their actual work/project history, not their listed title. Avoid generic terms like: Consultant, Solutions, Enterprise, 'software developer', 'software engineer', 'full stack developer', or IT. Be specific - e.g., 'Cloud Infrastructure Engineer' not 'IT Professional'):\n"
+                      "- Best job title that fits their secondary experience (Must be different from primary. Follow same rules as above):\n"
+                      "- Best job title that fits their tertiary experience (Must be different from both primary and secondary. Follow same rules as above):\n"
                       "- Most Recent Company Worked for:\n"
-                      "- Most Recent Start Date (YYYY-MM-DD):\n"
-                      "- Most Recent End Date (YYYY-MM-DD):\n"
+                      "- Most Recent Start Date (YYYY-MM-DD format - convert from whatever format is in resume, e.g., '09/2021' becomes '2021-09-01'):\n"
+                      "- Most Recent End Date (YYYY-MM-DD format or 'Present' if currently employed there):\n"
                       "- Most Recent Job Location:\n"
                       "- Second Most Recent Company Worked for:\n"
                       "- Second Most Recent Start Date (YYYY-MM-DD):\n"
@@ -290,28 +315,28 @@ def create_unified_prompt(resume_text, userid=None):
                       "- Seventh Most Recent Job Location:\n"
                       "- Based on all 7 of their most recent companies above, what is the Primary industry they work in:\n"
                       "- Based on all 7 of their most recent companies above, what is the Secondary industry they work in:\n"
-                      "- Top 10 Technical Skills:\n"
-                      "- What technical language do they use most often?:\n"
+                      "- Top 10 Technical Skills (IMPORTANT: Only include TECHNICAL skills like programming languages, frameworks, tools, platforms, databases, and cloud services. Do NOT include soft skills. Provide as comma-separated list):\n"
+                      "- What technical language do they use most often? (Programming or scripting language - pick the ONE they use most):\n"
                       "- What technical language do they use second most often?:\n"
                       "- What technical language do they use third most often?:\n"
-                      "- What software do they talk about using the most?:\n"
-                      "- What software do they talk about using the second most?:\n"
-                      "- What software do they talk about using the third most?:\n"
-                      "- What software do they talk about using the fourth most?:\n"
-                      "- What software do they talk about using the fifth most?:\n"
-                      "- What physical hardware do they talk about using the most?:\n"
-                      "- What physical hardware do they talk about using the second most?:\n"
-                      "- What physical hardware do they talk about using the third most?:\n"
-                      "- What physical hardware do they talk about using the fourth most?:\n"
-                      "- What physical hardware do they talk about using the fifth most?:\n"
-                      "- Based on their skills, put them in a primary technical category:\n"
-                      "- Based on their skills, put them in a subsidiary technical category:\n"
-                      "- Types of projects they have worked on:\n"
-                      "- Based on their skills, categories, certifications, and industries, determine what they specialize in:\n"
+                      "- What software do they talk about using the most? (Include databases, tools, platforms, frameworks, etc.):\n"
+                      "- What software do they talk about using the second most? (Must be different from first):\n"
+                      "- What software do they talk about using the third most? (Must be different from previous):\n"
+                      "- What software do they talk about using the fourth most? (Must be different from previous):\n"
+                      "- What software do they talk about using the fifth most? (Must be different from previous):\n"
+                      "- What physical hardware do they talk about using the most? (IMPORTANT: Only list actual PHYSICAL hardware like servers, routers, switches, IoT devices, embedded systems, etc. Do NOT include software or virtual systems):\n"
+                      "- What physical hardware do they talk about using the second most? (Must be different from first, physical hardware only):\n"
+                      "- What physical hardware do they talk about using the third most? (Must be different from previous, physical hardware only):\n"
+                      "- What physical hardware do they talk about using the fourth most? (Must be different from previous, physical hardware only):\n"
+                      "- What physical hardware do they talk about using the fifth most? (Must be different from previous, physical hardware only):\n"
+                      "- Based on their skills, put them in a primary technical category (Choose from standard technical categories like Software Development, Cloud/DevOps, Data/Analytics, Infrastructure/Networking, Cybersecurity, Database Administration, QA/Testing, Project Management, Business Analysis, UI/UX Design, Hardware/Embedded, AI/Machine Learning, Mobile Development, Enterprise Systems, or Other):\n"
+                      "- Based on their skills, put them in a subsidiary technical category (Must be different from primary. Choose from same categories):\n"
+                      "- Types of projects they have worked on (Use action-oriented phrases that describe what they've accomplished, focusing on implementations, migrations, integrations, optimizations, deployments, etc.):\n"
+                      "- Based on their skills, categories, certifications, and industries, determine what they specialize in (Be specific about their niche expertise using a 3-7 word phrase that captures their core specialization and distinguishes them):\n"
                       "- Based on all this knowledge, write a summary of this candidate that could be sellable to an employer:\n"
-                      "- How long have they lived in the United States(numerical answer only):\n"
-                      "- Total years of professional experience (numerical answer only):\n"
-                      "- Average tenure at companies in years (numerical answer only):"
+                      "- How long have they worked in the United States in YEARS (numerical answer only, use decimals like 0.5 for 6 months). If all jobs are in US or no location specified, calculate from earliest job to most recent/present:\n"
+                      "- Total years of professional experience (numerical answer only) - IMPORTANT: Calculate from the earliest job start date to the most recent job end date. If the most recent job says 'Present', 'Current', or similar, use today's date as the end date. Do NOT sum up individual job durations as jobs may overlap. For example, if someone worked from 2015-2018 and 2017-2020, the total is 5 years (2015-2020), not 6 years. If they started in 2015 and their current job is 'Present', calculate from 2015 to today:\n"
+                      "- Average tenure at companies in years (numerical answer only) - Calculate by dividing total experience by number of different companies. Only count each company once even if they had multiple positions there:"
         }
     ]
 
@@ -385,13 +410,21 @@ def process_single_resume_unified(resume_data):
         # Send to OpenAI API
         logging.info(f"UserID {userid}: Sending unified request")
         unified_start_time = time.time()
-        
-        unified_response = openai.chat.completions.create(
-            model=DEFAULT_MODEL,
-            messages=unified_messages,
-            temperature=1  # New model only supports default temperature of 1
-            # Note: gpt-5-mini returns empty responses with max_completion_tokens
-        )
+
+        # Get model-specific parameters
+        model_params = get_model_params(DEFAULT_MODEL)
+
+        # Build API call parameters
+        api_params = {
+            "model": DEFAULT_MODEL,
+            "messages": unified_messages
+        }
+
+        # Only add temperature if model supports custom values
+        if model_params["supports_custom_temp"]:
+            api_params["temperature"] = model_params["temperature"]
+
+        unified_response = openai.chat.completions.create(**api_params)
         
         unified_time = time.time() - unified_start_time
         logging.info(f"UserID {userid}: Unified processing completed in {unified_time:.2f}s")

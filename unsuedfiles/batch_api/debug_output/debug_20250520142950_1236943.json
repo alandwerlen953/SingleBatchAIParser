@@ -1,0 +1,26 @@
+{
+  "userid": 1236943,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Data Science",
+    "SecondaryCategory": "Data Analysis",
+    "ProjectTypes": "Predictive modeling, Customer segmentation, Data visualization",
+    "Specialty": "Data Science and Predictive Analytics",
+    "Summary": "Arjun Narayanan is a data science professional with a strong background in predictive modeling, customer segmentation, and data visualization. With experience in developing predictive models that enhance sales efficiency and revenue, he is proficient in Python, SQL, and Tableau, among other tools. Arjun has successfully collaborated with cross-functional teams to align data-driven insights with business goals, making him a valuable asset for organizations looking to leverage data for strategic decision-making.",
+    "TimeInUS": "1",
+    "YearsExperience": "2",
+    "AverageTenure": "1"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4389,
+    "completion_tokens": 441,
+    "total_tokens": 4921,
+    "processing_time_seconds": 7.815568447113037,
+    "cost": {
+      "input_cost": 0.0043890000000000005,
+      "output_cost": 0.001323,
+      "total_cost": 0.005712
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Shyam",
+      "MiddleName": "NULL",
+      "LastName": "Nyathani"
+    },
+    "Contact": {
+      "Phone": "732-954-4263",
+      "SecondaryPhone": "NULL",
+      "Email": "nyathani2022@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "https://www.linkedin.com/in/shyam-nyathani-1583121a",
+      "Address": "NULL",
+      "City": "NULL",
+      "State": "NULL"
+    },
+    "Education": {
+      "BachelorsDegree": "B. Sc Computer Science from Kakatiya University, Warangal India",
+      "MastersDegree": "M. Tech Computer Science & Engineering at Osmania University, India",
+      "Certifications": "NULL"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Shriyan Software LLC",
+      "StartDate": "2019-12-01",
+      "EndDate": "Present",
+      "Location": "NULL"
+    },
+    "SecondMostRecent": {
+      "Company": "Wipro Limited",
+      "StartDate": "2022-03-01",
+      "EndDate": "2024-02-01",
+      "Location": "NULL"
+    },
+    "ThirdMostRecent": {
+      "Company": "Cognizant",
+      "StartDate": "2021-01-01",
+      "EndDate": "2022-02-01",
+      "Location": "NULL"
+    },
+    "FourthMostRecent": {
+      "Company": "Infosys Technology Ltd",
+      "StartDate": "2020-02-01",
+      "EndDate": "2020-11-01",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "Virtusa Corporation",
+      "StartDate": "2017-07-01",
+      "EndDate": "2019-12-01",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Principal Architect",
+    "SecondaryTitle": "Solution Architect",
+    "TertiaryTitle": "Technical Architect",
+    "PrimaryIndustry": "Financial Services",
+    "SecondaryIndustry": "Healthcare",
+    "TopSkills": "AWS, Azure, MuleSoft, Spring Boot, Microservices, Cloud Migration, SaaS Integration, Architecture Design, DevOps, Technical Leadership"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "Java",
+    "SecondaryLanguage": "Python",
+    "TertiaryLanguage": "SQL",
+    "SoftwareApp1": "AWS",
+    "SoftwareApp2": "Azure",
+    "SoftwareApp3": "MuleSoft",
+    "SoftwareApp4": "Jenkins",
+    "SoftwareApp5": "GitLab",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Backend Development",
+    "SecondaryCategory": "Cloud Computing",
+    "ProjectTypes": "Migration, Integration, Implementation",
+    "Specialty": "Cloud Architecture and Integration Solutions",
+    "Summary": "Shyam Nyathani is a seasoned Principal Architect with over 23 years of experience in leading complex projects and delivering high-performance solutions across various industries, including Financial Services and Healthcare. He specializes in cloud architecture, migration, and integration, with extensive expertise in AWS, Azure, and MuleSoft technologies. Shyam has successfully managed teams and projects, ensuring on-time delivery and alignment with organizational goals.",
+    "LengthInUS": "NULL",
+    "YearsOfExperience": "23",
+    "AvgTenure": "2"
+  }
+}

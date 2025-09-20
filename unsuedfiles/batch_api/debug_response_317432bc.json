@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "ERIC",
+      "MiddleName": "NULL",
+      "LastName": "LOUIS"
+    },
+    "Contact": {
+      "Phone": "469-649-4442",
+      "SecondaryPhone": "NULL",
+      "Email": "elouis4035@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "NULL",
+      "Address": "NULL",
+      "City": "Melissa",
+      "State": "TX"
+    },
+    "Education": {
+      "BachelorsDegree": "Bachelor of Business Administration in Operations Management",
+      "MastersDegree": "NULL",
+      "Certifications": "NULL"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Boeing Global Services",
+      "StartDate": "2021-11-01",
+      "EndDate": "2025-01-31",
+      "Location": "Irving, TX"
+    },
+    "SecondMostRecent": {
+      "Company": "PepsiCo North America Beverages",
+      "StartDate": "2018-03-01",
+      "EndDate": "2021-01-31",
+      "Location": "Plano, TX"
+    },
+    "ThirdMostRecent": {
+      "Company": "FedEx Supply Chain - T-Mobile",
+      "StartDate": "2016-06-01",
+      "EndDate": "2018-03-31",
+      "Location": "Coppell, TX"
+    },
+    "FourthMostRecent": {
+      "Company": "DHL Supply Chain - Armored Auto Group",
+      "StartDate": "2014-12-01",
+      "EndDate": "2016-05-31",
+      "Location": "Garland, TX"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Senior Business Analyst",
+    "SecondaryTitle": "Senior Routing Specialist",
+    "TertiaryTitle": "Operations Supervisor",
+    "PrimaryIndustry": "Supply Chain",
+    "SecondaryIndustry": "Transportation",
+    "TopSkills": "Business Analysis, SAP ERP, Data Management, Procurement, Inventory Management, Project Management, Customer Service, Analytics, Collaboration, Reporting"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "SAP ERP",
+    "SecondaryLanguage": "NULL",
+    "TertiaryLanguage": "NULL",
+    "SoftwareApp1": "Microsoft Office",
+    "SoftwareApp2": "NULL",
+    "SoftwareApp3": "NULL",
+    "SoftwareApp4": "NULL",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Business Administration",
+    "SecondaryCategory": "Supply Chain Management",
+    "ProjectTypes": "Process Improvement, Data Analysis, Inventory Management",
+    "Specialty": "Supply Chain Optimization and Analytics",
+    "Summary": "Eric Louis is a seasoned Supply Chain Professional with extensive experience in logistics, procurement, and operations. He has a proven track record in managing purchase order systems and streamlining inventory planning, with a strong focus on SAP ERP and data management. Eric excels in delivering actionable insights through analytics and has successfully led process improvement initiatives across various organizations.",
+    "LengthInUS": "21",
+    "YearsOfExperience": "10",
+    "AvgTenure": "2"
+  }
+}

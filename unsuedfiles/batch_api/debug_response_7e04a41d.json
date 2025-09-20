@@ -1,0 +1,110 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Victor",
+      "MiddleName": "Hugo",
+      "LastName": "Martinez"
+    },
+    "Contact": {
+      "Phone": "(214) 422-2138",
+      "SecondaryPhone": NULL,
+      "Email": "P@aol.com",
+      "SecondaryEmail": NULL,
+      "LinkedIn": "http://www.linkedIn.com/in/victorhugomartinez",
+      "Address": NULL,
+      "City": NULL,
+      "State": NULL
+    },
+    "Education": {
+      "BachelorsDegree": "University of Texas Dallas, Bachelor's Degree (1990-1993)",
+      "MastersDegree": NULL,
+      "Certifications": "DPS Training; Corrugated 101; Getting to Yes"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Under Standing Coo Peration",
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": NULL
+    },
+    "SecondMostRecent": {
+      "Company": "Career Break - Parent End of Life",
+      "StartDate": "2023-12",
+      "EndDate": "2024-07",
+      "Location": "DFW, Boise, and California"
+    },
+    "ThirdMostRecent": {
+      "Company": "Top Build - Insulation",
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": "Seattle, WA"
+    },
+    "FourthMostRecent": {
+      "Company": "Lowes Home Center",
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": "MS, IN"
+    },
+    "FifthMostRecent": {
+      "Company": "Lifetime (DIY), Lincare",
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": "McAllen, TX"
+    },
+    "SixthMostRecent": {
+      "Company": "Weyerhaeuser Paper Company",
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": NULL
+    },
+    "SeventhMostRecent": {
+      "Company": "Ryco Packaging",
+      "StartDate": "1992-11",
+      "EndDate": "1999-05",
+      "Location": "Dallas, TX"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Regional Sales Manager",
+    "SecondaryTitle": "International Account Manager",
+    "TertiaryTitle": "Branch Sales Manager",
+    "PrimaryIndustry": "Construction",
+    "SecondaryIndustry": "Retail",
+    "TopSkills": [
+      "Business Development",
+      "Account Development",
+      "Strategic Planning",
+      "Relationship Management",
+      "Negotiation Techniques",
+      "Sales Analysis",
+      "Inventory Management",
+      "Category Management",
+      "Project Management",
+      "Leadership"
+    ]
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": NULL,
+    "SecondaryLanguage": NULL,
+    "TertiaryLanguage": NULL,
+    "SoftwareApp1": NULL,
+    "SoftwareApp2": NULL,
+    "SoftwareApp3": NULL,
+    "SoftwareApp4": NULL,
+    "SoftwareApp5": NULL,
+    "Hardware1": NULL,
+    "Hardware2": NULL,
+    "Hardware3": NULL,
+    "Hardware4": NULL,
+    "Hardware5": NULL,
+    "PrimaryCategory": "Project Management",
+    "SecondaryCategory": "Sales Operations",
+    "ProjectTypes": "Bid Proposal Implementation; Sales Deployment; Market Expansion",
+    "Specialty": "Commercial construction sales, bid/proposal implementation and territory business development",
+    "Summary": "Strategic, results-driven sales and business development leader with broad experience in commercial construction and building materials, retail account management, and international distributor management. Proven record growing revenues, managing large installer/production crews, producing winning bids/proposals, and negotiating margins across construction and retail channels. Bilingual (conversational Spanish) with strong relationship management, strategic planning, and leadership skills.",
+    "LengthInUS": "10",
+    "YearsOfExperience": "10",
+    "AvgTenure": "5"
+  }
+}

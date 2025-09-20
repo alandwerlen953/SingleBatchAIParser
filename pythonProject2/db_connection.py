@@ -514,9 +514,10 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
             
             fields.append(db_field)
         
-        # Add LastProcessed timestamp
-        fields.append("LastProcessed")
-        params.append(datetime.now())
+        # Add LastProcessed timestamp only if not already provided
+        if "LastProcessed" not in fields:
+            fields.append("LastProcessed")
+            params.append(datetime.now())
         
         # Execute update or insert
         if exists:
@@ -577,6 +578,87 @@ def update_candidate_record(userid, parsed_data, max_retries=3):
             
         return False, f"Unexpected error: {str(e)}"
 
+# New paginated function for streaming batch processing
+def get_resume_batch_paginated(batch_size=5000, offset=0, max_retries=3):
+    """
+    Get a paginated batch of unprocessed resumes for streaming processing
+
+    Args:
+        batch_size: Number of resumes to retrieve
+        offset: Number of records to skip
+        max_retries: Maximum number of connection/query attempts
+
+    Returns:
+        list: List of (userid, resume_text) tuples
+    """
+    # First establish connection
+    conn, conn_success, conn_message = create_pyodbc_connection(retries=max_retries)
+
+    if not conn_success:
+        logger.error(f"Failed to connect to database: {conn_message}")
+        return []
+
+    try:
+        # Query with OFFSET/FETCH for pagination
+        query = f"""
+            SELECT
+                userid,
+                markdownResume as cleaned_resume
+            FROM dbo.aicandidate WITH (NOLOCK)
+            WHERE LastProcessed IS NULL
+                AND markdownresume <> ''
+                AND markdownresume IS NOT NULL
+                AND lastprocessedmarkdown IS NOT NULL
+                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -93, GETDATE()) AS DATE)
+                AND datediff(year, datelastmodified, GETDATE()) <= 5
+            ORDER BY lastprocessedmarkdown asc
+            OFFSET {offset} ROWS
+            FETCH NEXT {batch_size} ROWS ONLY
+        """
+
+        logger.info(f"Fetching paginated batch: offset={offset}, size={batch_size}")
+        query_start_time = time.time()
+
+        # Execute query with retry logic
+        success, result, message = execute_query_with_retry(conn, query, retries=max_retries)
+
+        query_elapsed = time.time() - query_start_time
+        logger.info(f"Paginated query completed in {query_elapsed:.2f} seconds")
+
+        if not success:
+            logger.error(f"Failed to get paginated batch: {message}")
+            conn.close()
+            return []
+
+        resume_batch = []
+        if result:
+            for row in result:
+                userid = row[0]
+                cleaned_resume = row[1]
+
+                if cleaned_resume and len(str(cleaned_resume).strip()) > 0:
+                    resume_batch.append((userid, cleaned_resume))
+                else:
+                    logger.warning(f"Empty resume text for UserID {userid} - skipping")
+
+            logger.info(f"Retrieved {len(resume_batch)} valid resumes from paginated query")
+        else:
+            logger.info(f"No records found at offset {offset}")
+
+        conn.close()
+        return resume_batch
+
+    except Exception as e:
+        logger.error(f"Error in paginated fetch: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
+        try:
+            conn.close()
+        except:
+            pass
+
+        return []
+
 # Utility function to get a batch of resumes with retry logic
 def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True):
     """
@@ -629,8 +711,10 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
                 AND markdownresume <> ''
                 AND markdownresume IS NOT NULL
                 AND lastprocessedmarkdown IS NOT NULL
-                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -3, GETDATE()) AS DATE)
-            ORDER BY lastprocessedmarkdown desc
+                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -93, GETDATE()) AS DATE)
+                AND datediff(year, datelastmodified, GETDATE()) <= 5
+
+            ORDER BY lastprocessedmarkdown asc
         """
 
         logger.info(f"Executing SQL query to fetch unprocessed resumes...")

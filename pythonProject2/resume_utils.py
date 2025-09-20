@@ -47,9 +47,42 @@ if not api_key:
     logging.error("API key is not set in the environment variables.")
 
 # Default model and configuration
-DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
+DEFAULT_MODEL = "gpt-5-mini-2025-08-07"  # Changed to GPT-5-mini
 MAX_TOKENS = 16000
 DEFAULT_TEMPERATURE = 0
+
+def get_model_params(model_name=None):
+    """
+    Get appropriate parameters for the specified model.
+    GPT-5-mini only supports temperature=1 and has specific token limits.
+
+    Returns:
+        dict: Model parameters including temperature and max_tokens
+    """
+    if model_name is None:
+        model_name = DEFAULT_MODEL
+
+    # GPT-5-mini models have specific restrictions
+    if "gpt-5" in model_name.lower():
+        return {
+            "temperature": 1.0,  # GPT-5-mini only supports default temperature
+            "max_tokens": MAX_TOKENS,
+            "supports_custom_temp": False
+        }
+    # GPT-4 models support custom parameters
+    elif "gpt-4" in model_name.lower():
+        return {
+            "temperature": 0.3,  # Custom temperature for GPT-4
+            "max_tokens": MAX_TOKENS,
+            "supports_custom_temp": True
+        }
+    # Default for unknown models
+    else:
+        return {
+            "temperature": DEFAULT_TEMPERATURE,
+            "max_tokens": MAX_TOKENS,
+            "supports_custom_temp": True
+        }
 
 # Token encoding
 def num_tokens_from_string(string, encoding_name="cl100k_base"):

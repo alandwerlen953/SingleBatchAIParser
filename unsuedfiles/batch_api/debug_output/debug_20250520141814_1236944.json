@@ -1,0 +1,26 @@
+{
+  "userid": 1236944,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Data Analysis",
+    "SecondaryCategory": "Business Intelligence",
+    "ProjectTypes": "Data analysis, predictive modeling, dashboard development, customer analytics",
+    "Specialty": "Data analytics and business intelligence in financial services",
+    "Summary": "A highly skilled data analyst with a Master's in Information Management and extensive experience in data analysis, predictive modeling, and business intelligence. Proven track record of improving key performance indicators through data-driven insights and innovative solutions. Proficient in Python, SQL, and various BI tools like Tableau and Power BI, with a strong focus on enhancing decision-making efficiency in financial services. Holds certifications in Data Science and Business Analytics, demonstrating a commitment to continuous learning and professional development.",
+    "TimeInUS": "2",
+    "YearsExperience": "4",
+    "AverageTenure": "1"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4870,
+    "completion_tokens": 452,
+    "total_tokens": 5413,
+    "processing_time_seconds": 9.405990839004517,
+    "cost": {
+      "input_cost": 0.00487,
+      "output_cost": 0.001356,
+      "total_cost": 0.006226000000000001
+    }
+  }
+}

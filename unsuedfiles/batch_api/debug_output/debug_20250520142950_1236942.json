@@ -1,0 +1,26 @@
+{
+  "userid": 1236942,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Data Engineering",
+    "SecondaryCategory": "Cloud Computing",
+    "ProjectTypes": "Data migration, ETL pipeline development, Cloud infrastructure optimization",
+    "Specialty": "Data integration and cloud-based solutions",
+    "Summary": "Goutham Aditya Pelluri is a results-driven Data Engineer with over 3 years of experience in designing and developing scalable data pipelines and cloud-based solutions. Proficient in Python and SQL, he has successfully implemented ETL workflows and optimized data processing efficiency using Azure Data Factory and Databricks. With a strong foundation in data modeling and big data frameworks, Goutham has a proven track record of delivering high-availability solutions and enhancing data accessibility for enterprise applications. His expertise in monitoring and troubleshooting, combined with a solid educational background in Computer Science, positions him as a valuable asset for organizations looking to leverage data for strategic decision-making.",
+    "TimeInUS": "1",
+    "YearsExperience": "3",
+    "AverageTenure": "1"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 5604,
+    "completion_tokens": 491,
+    "total_tokens": 6186,
+    "processing_time_seconds": 8.849557876586914,
+    "cost": {
+      "input_cost": 0.0056040000000000005,
+      "output_cost": 0.001473,
+      "total_cost": 0.007077
+    }
+  }
+}

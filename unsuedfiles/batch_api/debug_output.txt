@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/mnt/c/Users/Austin Landwerlen/PycharmProjects/AIParsecleanednobatch/pythonProject2/batch_api/run_direct_api.py", line 15, in <module>
+    from direct_processor import process_resume_batch, process_specific_resume, run_continuous_processing
+  File "/mnt/c/Users/Austin Landwerlen/PycharmProjects/AIParsecleanednobatch/pythonProject2/batch_api/direct_processor.py", line 26, in <module>
+    from batch_api.direct_api_utils import (
+  File "/mnt/c/Users/Austin Landwerlen/PycharmProjects/AIParsecleanednobatch/pythonProject2/batch_api/direct_api_utils.py", line 14, in <module>
+    import pyodbc
+ModuleNotFoundError: No module named 'pyodbc'

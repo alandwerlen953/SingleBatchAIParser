@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Atul",
+      "MiddleName": "NULL",
+      "LastName": "Dumbre"
+    },
+    "Contact": {
+      "Phone": "+1 615.720.5208",
+      "SecondaryPhone": "NULL",
+      "Email": "atuldumbre@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "https://www.linkedin.com/in/atuldumbre",
+      "Address": "17202 Crowne Brook Cir",
+      "City": "Franklin",
+      "State": "TN"
+    },
+    "Education": {
+      "BachelorsDegree": "BAMS in Medicine",
+      "MastersDegree": "Master of Business Administration (M.B.A.) in Healthcare Administration",
+      "Certifications": "SAFe POPM, AWS CLF-C02, SAFe Devops"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "CIGNA HEALTHCARE",
+      "StartDate": "2023-02",
+      "EndDate": "Present",
+      "Location": "NULL"
+    },
+    "SecondMostRecent": {
+      "Company": "CARDINAL HEALTH (TCS)",
+      "StartDate": "2019-09",
+      "EndDate": "2022-01",
+      "Location": "NULL"
+    },
+    "ThirdMostRecent": {
+      "Company": "MCKESSON (TCS)",
+      "StartDate": "2017-09",
+      "EndDate": "2019-08",
+      "Location": "NULL"
+    },
+    "FourthMostRecent": {
+      "Company": "AVIVA- DILIGENTA (TCS)",
+      "StartDate": "2015-08",
+      "EndDate": "2017-08",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "IPRACTICE LLC",
+      "StartDate": "2012-07",
+      "EndDate": "2015-06",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "COMPUTER SCIENCE CORPORATION",
+      "StartDate": "2011-07",
+      "EndDate": "2012-06",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "PLUS91 TECHNOLOGIES",
+      "StartDate": "2010-04",
+      "EndDate": "2011-06",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Healthcare Product Manager",
+    "SecondaryTitle": "Product Owner",
+    "TertiaryTitle": "Functional Consultant",
+    "PrimaryIndustry": "HealthCare",
+    "SecondaryIndustry": "Insurance",
+    "TopSkills": "Product Lifecycle Management, Agile & SAFe, Stakeholder Engagement, Claims Automation, EHR Systems, Data-Driven Decision Making, Backlog Prioritization, API Familiarity, Cloud Technologies, Clinical Pharmacy System"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "SQL",
+    "SecondaryLanguage": "NULL",
+    "TertiaryLanguage": "NULL",
+    "SoftwareApp1": "JIRA",
+    "SoftwareApp2": "NULL",
+    "SoftwareApp3": "NULL",
+    "SoftwareApp4": "NULL",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Business Administration",
+    "SecondaryCategory": "Product Management",
+    "ProjectTypes": "EHR Development, Claims Automation, Enrollment Management",
+    "Specialty": "Healthcare Product Management and Development",
+    "Summary": "Dr. Atul Dumbre is a strategic and results-driven Healthcare Product Manager with over 14 years of experience in delivering high-impact digital solutions across various healthcare domains. He has a proven track record in leading product lifecycle management, specializing in EHR systems and claims automation, while leveraging agile methodologies and stakeholder engagement to drive successful outcomes.",
+    "LengthInUS": "NULL",
+    "YearsOfExperience": "14",
+    "AvgTenure": "2"
+  }
+}

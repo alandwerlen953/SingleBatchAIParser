@@ -1,0 +1,26 @@
+{
+  "userid": 1182824,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Data Analysis",
+    "SecondaryCategory": "Data Science",
+    "ProjectTypes": "Data Analysis, Machine Learning Implementation, Data Visualization",
+    "Specialty": "Data Analysis and Machine Learning",
+    "Summary": "Yudheksha Govindarajan Kavitha is a skilled data analyst and machine learning practitioner with a strong academic background, holding a Master's degree in Computer Science. With hands-on experience in developing data-driven solutions, including a Zoom transcript summarizer and DDoS detection system, they have demonstrated proficiency in Python, SQL, and data visualization tools like Tableau. Their ability to mentor students and improve data accuracy showcases their strong communication skills and commitment to excellence. Yudheksha is well-equipped to contribute to data analysis and machine learning projects in a dynamic environment.",
+    "TimeInUS": "1",
+    "YearsExperience": "2",
+    "AverageTenure": "0"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 5061,
+    "completion_tokens": 468,
+    "total_tokens": 5620,
+    "processing_time_seconds": 6.790879726409912,
+    "cost": {
+      "input_cost": 0.005061,
+      "output_cost": 0.001404,
+      "total_cost": 0.006465
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "userid": 1236941,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Training and Development",
+    "SecondaryCategory": "Instructional Design",
+    "ProjectTypes": "Training program development, LMS implementation, Instructional design methodology integration",
+    "Specialty": "Training program development and instructional design for corporate environments",
+    "Summary": "Jason M. Anderson is a seasoned training and development leader with over 15 years of experience in designing and implementing effective training programs. He has a strong background in instructional design methodologies and has successfully managed Learning Management Systems (LMS) to enhance employee training and development. His expertise in developing training strategies and metrics to measure effectiveness makes him a valuable asset for organizations looking to improve their training initiatives.",
+    "LengthinUS": "26",
+    "YearsofExperience": "15",
+    "AvgTenure": "2"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 5894,
+    "completion_tokens": 447,
+    "total_tokens": 6432,
+    "processing_time_seconds": 9.555464506149292,
+    "cost": {
+      "input_cost": 0.005894,
+      "output_cost": 0.001341,
+      "total_cost": 0.007235
+    }
+  }
+}

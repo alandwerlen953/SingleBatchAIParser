@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Aishwariya",
+      "MiddleName": "NULL",
+      "LastName": "Arul"
+    },
+    "Contact": {
+      "Phone": "(740) 803-3442",
+      "SecondaryPhone": "NULL",
+      "Email": "aishwariyasharma1519@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "https://www.linkedin.com/in/aishwariyaarul/",
+      "Address": "NULL",
+      "City": "NULL",
+      "State": "NULL"
+    },
+    "Education": {
+      "BachelorsDegree": "Bachelor's in Electronics and Communication Engineering",
+      "MastersDegree": "Master's in Business Analytics",
+      "Certifications": "NULL"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Flexon Technologies Inc",
+      "StartDate": "2024-09-01",
+      "EndDate": "Present",
+      "Location": "California, USA"
+    },
+    "SecondMostRecent": {
+      "Company": "Infosys Limited Inc",
+      "StartDate": "2019-05-01",
+      "EndDate": "2019-10-01",
+      "Location": "Mysore, India"
+    },
+    "ThirdMostRecent": {
+      "Company": "Samukh Motors Yamaha",
+      "StartDate": "2018-01-01",
+      "EndDate": "2019-04-01",
+      "Location": "Chennai, India"
+    },
+    "FourthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Data Scientist",
+    "SecondaryTitle": "Systems Engineer",
+    "TertiaryTitle": "Junior Data Scientist",
+    "PrimaryIndustry": "Data Processing, Hosting, and Related Services",
+    "SecondaryIndustry": "NULL",
+    "TopSkills": "SQL, Python, Machine Learning, Data Visualization, Tableau, Power BI, Statistical Analysis, Cloud Computing, Natural Language Processing, Generative AI"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "Python",
+    "SecondaryLanguage": "SQL",
+    "TertiaryLanguage": "NULL",
+    "SoftwareApp1": "Tableau",
+    "SoftwareApp2": "Power BI",
+    "SoftwareApp3": "Excel",
+    "SoftwareApp4": "NULL",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Data Science",
+    "SecondaryCategory": "Business Analytics",
+    "ProjectTypes": "Implementation, Optimization, Analysis",
+    "Specialty": "Data-driven solutions, Predictive modeling, Business intelligence",
+    "Summary": "Aishwariya Arul is a results-driven Data Scientist with a Master's in Business Analytics and over 3 years of experience in designing and implementing data-driven solutions. She specializes in leveraging data to enhance business performance through predictive modeling, statistical analysis, and data visualization. Proficient in SQL, Python, and various data visualization tools, Aishwariya has a proven track record of optimizing strategies and delivering impactful results across multiple domains.",
+    "LengthInUS": "1",
+    "YearsOfExperience": "3",
+    "AvgTenure": "1"
+  }
+}

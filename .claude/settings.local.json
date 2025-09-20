@@ -1,15 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep:*)",
-      "Bash(ls:*)",
-      "Bash(for file in *.py)",
-      "Bash(do if ! grep -q \"import logging\" \"$file\")",
-      "Bash(then echo \"$file\")",
-      "Bash(fi)",
-      "Bash(done)"
+      "Bash(cd:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   },
   "enableAllProjectMcpServers": false
 }

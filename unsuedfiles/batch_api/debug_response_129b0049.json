@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Haiyi",
+      "MiddleName": "NULL",
+      "LastName": "Wang"
+    },
+    "Contact": {
+      "Phone": "15713421424",
+      "SecondaryPhone": "NULL",
+      "Email": "why8307@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "www.linkedin.com/in/haiyiwang",
+      "Address": "NULL",
+      "City": "NULL",
+      "State": "NULL"
+    },
+    "Education": {
+      "BachelorsDegree": "Bachelor of Computer Science and Technology",
+      "MastersDegree": "Master of Computer Science",
+      "Certifications": "AWS Certified Data Engineer - Associate"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "VF Corporation",
+      "StartDate": "2023-07-01",
+      "EndDate": "Present",
+      "Location": "NULL"
+    },
+    "SecondMostRecent": {
+      "Company": "Microsoft",
+      "StartDate": "2022-10-01",
+      "EndDate": "2023-04-01",
+      "Location": "NULL"
+    },
+    "ThirdMostRecent": {
+      "Company": "University of North Texas",
+      "StartDate": "2022-02-01",
+      "EndDate": "2022-08-01",
+      "Location": "Dallas, TX"
+    },
+    "FourthMostRecent": {
+      "Company": "Carrefour",
+      "StartDate": "2016-01-01",
+      "EndDate": "2017-12-01",
+      "Location": "Shanghai, China"
+    },
+    "FifthMostRecent": {
+      "Company": "Shanghai Lujiazui International Financial Asset Exchange Co., Ltd",
+      "StartDate": "2012-07-01",
+      "EndDate": "2015-12-01",
+      "Location": "Shanghai, China"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Data Engineer",
+    "SecondaryTitle": "Data Scientist",
+    "TertiaryTitle": "Graduate Teaching Assistant",
+    "PrimaryIndustry": "Retail",
+    "SecondaryIndustry": "Technology",
+    "TopSkills": "Python, SQL, Power BI, SAS, Azure, AWS, Spark, Tableau, Machine Learning, Data Integration"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "Python",
+    "SecondaryLanguage": "SQL",
+    "TertiaryLanguage": "R",
+    "SoftwareApp1": "Power BI",
+    "SoftwareApp2": "Tableau",
+    "SoftwareApp3": "SAS",
+    "SoftwareApp4": "Azure",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Data Engineering",
+    "SecondaryCategory": "Data Analysis",
+    "ProjectTypes": "Data Migration, Data Integration, Data Optimization",
+    "Specialty": "Data Infrastructure and Analytics",
+    "Summary": "Haiyi Wang is a proficient Data Engineer with extensive experience in designing and maintaining data infrastructure, specializing in data migrations and integration efforts. With a strong background in Python, SQL, and various data analytics tools, Haiyi has successfully improved data pipeline efficiency and customer engagement strategies in major corporations. Holding a Master's degree in Computer Science and an AWS certification, Haiyi is eager to leverage technical skills to drive innovation in future projects.",
+    "LengthInUS": "1",
+    "YearsOfExperience": "11",
+    "AvgTenure": "2"
+  }
+}

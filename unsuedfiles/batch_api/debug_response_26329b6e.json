@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Srikar",
+      "MiddleName": "Rao",
+      "LastName": "Boinapally"
+    },
+    "Contact": {
+      "Phone": "813-297-3831",
+      "SecondaryPhone": "NULL",
+      "Email": "srikarrao.boinpally@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "NULL",
+      "Address": "NULL",
+      "City": "Tampa",
+      "State": "FL"
+    },
+    "Education": {
+      "BachelorsDegree": "Bachelor of Engineering (Computer Science and Engineering)",
+      "MastersDegree": "Master of Science (Computer Science)",
+      "Certifications": "NULL"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Capital One",
+      "StartDate": "2024-05-01",
+      "EndDate": "Present",
+      "Location": "McLean, VA"
+    },
+    "SecondMostRecent": {
+      "Company": "Versa Shore",
+      "StartDate": "2022-05-01",
+      "EndDate": "2024-04-01",
+      "Location": "Tampa, FL"
+    },
+    "ThirdMostRecent": {
+      "Company": "Manasa Life Sciences",
+      "StartDate": "2020-04-01",
+      "EndDate": "2021-07-01",
+      "Location": "Hyderabad, India"
+    },
+    "FourthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Data Analyst",
+    "SecondaryTitle": "Business Intelligence Analyst",
+    "TertiaryTitle": "NULL",
+    "PrimaryIndustry": "Financial Services",
+    "SecondaryIndustry": "Data Processing, Hosting, and Related Services",
+    "TopSkills": "Power BI, Tableau, SQL, Python, R, Data Analysis, ETL, Data Warehousing, Predictive Analytics, DAX"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "SQL",
+    "SecondaryLanguage": "Python",
+    "TertiaryLanguage": "R",
+    "SoftwareApp1": "Power BI",
+    "SoftwareApp2": "Tableau",
+    "SoftwareApp3": "MS Office",
+    "SoftwareApp4": "GitHub",
+    "SoftwareApp5": "Jira",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Data Analysis",
+    "SecondaryCategory": "Business Intelligence",
+    "ProjectTypes": "Data Modeling, Dashboard Development, ETL Pipeline Implementation",
+    "Specialty": "Data Analysis and Visualization in Financial Services",
+    "Summary": "Results-oriented Data Analyst with over 3 years of experience in delivering actionable insights through data collection, cleaning, analysis, and visualization. Proficient in building scalable data models and designing dashboards using tools like Power BI and Tableau. Skilled in SQL and Python for data extraction and analysis, with a strong background in collaborating cross-functionally to drive data-driven decision-making.",
+    "LengthInUS": "3",
+    "YearsOfExperience": "3",
+    "AvgTenure": "1"
+  }
+}

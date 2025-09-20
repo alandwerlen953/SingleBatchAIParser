@@ -6,6 +6,7 @@ import os
 import logging
 import time
 import concurrent.futures
+from datetime import datetime
 
 # Check if we're in quiet mode and configure logging appropriately
 if os.environ.get('QUIET_MODE', '').lower() in ('1', 'true', 'yes'):
@@ -17,7 +18,7 @@ from resume_utils import (
     get_resume_batch, update_candidate_record_with_retry,
     openai
 )
-from two_step_prompts_taxonomy import create_step1_prompt, create_step2_prompt
+# from two_step_prompts_taxonomy import create_step1_prompt, create_step2_prompt  # Not using two-step approach
 from date_processor import process_resume_with_enhanced_dates
 from error_logger import get_error_logger
 
@@ -1131,7 +1132,8 @@ def prepare_update_data(enhanced_results, step1_results=None, skills_list=None):
         "Summary": enhanced_results.get("Summary", ""),
         "LengthinUS": enhanced_results.get("LengthinUS", ""),
         "YearsofExperience": enhanced_results.get("YearsofExperience", ""),
-        "AvgTenure": enhanced_results.get("AvgTenure", "")
+        "AvgTenure": enhanced_results.get("AvgTenure", ""),
+        "LastProcessed": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]  # Add LastProcessed timestamp
     }
 
 def process_single_resume_two_step(resume_data):

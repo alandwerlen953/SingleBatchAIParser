@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "David",
+      "MiddleName": "NULL",
+      "LastName": "Martinez"
+    },
+    "Contact": {
+      "Phone": "(469) 321-9786",
+      "SecondaryPhone": "NULL",
+      "Email": "davidm9089@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "linkedin.com/in/dmart02",
+      "Address": "NULL",
+      "City": "Grand Prairie",
+      "State": "TX"
+    },
+    "Education": {
+      "BachelorsDegree": "Bachelor of Science BS - MIS",
+      "MastersDegree": "NULL",
+      "Certifications": "Tableau 2022 A-Z: Hands-On Tableau Training for Data Science, Alteryx Designer Core Certified"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Oldcastle BuildingEnvelope",
+      "StartDate": "2024-11-01",
+      "EndDate": "Present",
+      "Location": "Grand Prairie, TX"
+    },
+    "SecondMostRecent": {
+      "Company": "Primoris Services Corporation",
+      "StartDate": "2023-10-01",
+      "EndDate": "2024-08-01",
+      "Location": "Lewisville, TX"
+    },
+    "ThirdMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FourthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Data Analyst",
+    "SecondaryTitle": "Business Intelligence Analyst",
+    "TertiaryTitle": "Data Visualization Specialist",
+    "PrimaryIndustry": "Manufacturing",
+    "SecondaryIndustry": "Construction",
+    "TopSkills": "Data Analytics, Data Visualization, SQL, Python, Tableau, Power BI, Data Management, Data Processing, Data Cleansing, Analytical Problem Solving"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "SQL",
+    "SecondaryLanguage": "Python",
+    "TertiaryLanguage": "NULL",
+    "SoftwareApp1": "Tableau",
+    "SoftwareApp2": "Power BI",
+    "SoftwareApp3": "Microsoft Office",
+    "SoftwareApp4": "Alteryx",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Data Analytics",
+    "SecondaryCategory": "Business Intelligence",
+    "ProjectTypes": "Data Analysis, Reporting, Visualization",
+    "Specialty": "Data-driven decision making in manufacturing and construction",
+    "Summary": "David Martinez is a dedicated Data Analyst with over 3 years of experience in driving business decisions through actionable insights. He excels in analyzing complex data sets and creating clear visualizations to communicate findings effectively. With a strong background in SQL and Python, he has a proven track record of enhancing data quality and efficiency through automation processes. David is passionate about finding solutions to challenging problems and providing exceptional support to clients.",
+    "LengthInUS": "5",
+    "YearsOfExperience": "3",
+    "AvgTenure": "0.75"
+  }
+}

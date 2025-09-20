@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "David",
+      "MiddleName": NULL,
+      "LastName": "De Vore"
+    },
+    "Contact": {
+      "Phone": "201-873-3082",
+      "SecondaryPhone": NULL,
+      "Email": "ddevore1012@gmail.com",
+      "SecondaryEmail": NULL,
+      "LinkedIn": "https://www.linkedin.com/in/david-devore/",
+      "Address": NULL,
+      "City": NULL,
+      "State": NULL
+    },
+    "Education": {
+      "BachelorsDegree": "William Paterson College (courses in Business Administration & Marketing)",
+      "MastersDegree": NULL,
+      "Certifications": "ITIL 4 Foundation Certified; Certification in Computer Coding (Empire Technical School)"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Barclays UK",
+      "StartDate": "2023-03",
+      "EndDate": "2025-04",
+      "Location": "Whippany, NJ"
+    },
+    "SecondMostRecent": {
+      "Company": "Bank of America",
+      "StartDate": "2019-10",
+      "EndDate": "2023-03",
+      "Location": "Jersey City, NJ"
+    },
+    "ThirdMostRecent": {
+      "Company": "Bed Bath & Beyond",
+      "StartDate": "2017-01",
+      "EndDate": "2019-07",
+      "Location": "Union, NJ"
+    },
+    "FourthMostRecent": {
+      "Company": "Bed Bath & Beyond",
+      "StartDate": "2013-09",
+      "EndDate": "2017-01",
+      "Location": "Union, NJ"
+    },
+    "FifthMostRecent": {
+      "Company": NULL,
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": NULL
+    },
+    "SixthMostRecent": {
+      "Company": NULL,
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": NULL
+    },
+    "SeventhMostRecent": {
+      "Company": NULL,
+      "StartDate": NULL,
+      "EndDate": NULL,
+      "Location": NULL
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Problem Management Lead",
+    "SecondaryTitle": "Incident Manager",
+    "TertiaryTitle": "Data Center Manager",
+    "PrimaryIndustry": "Financial Services",
+    "SecondaryIndustry": "Retail",
+    "TopSkills": "Problem Management, Incident Management, Root Cause Analysis (RCA), Automation, ITIL 4, Tableau, SQL, Bloomberg, FIX Protocol, Azure"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "SQL",
+    "SecondaryLanguage": NULL,
+    "TertiaryLanguage": NULL,
+    "SoftwareApp1": "Tableau",
+    "SoftwareApp2": "Service Present",
+    "SoftwareApp3": "Bloomberg",
+    "SoftwareApp4": "Reuters",
+    "SoftwareApp5": "Fidessa",
+    "Hardware1": "IBM iSeries servers",
+    "Hardware2": "Rack servers (Windows/UNIX/Citrix hosts)",
+    "Hardware3": "UPS systems",
+    "Hardware4": "Emergency generators",
+    "Hardware5": "Data center HVAC systems",
+    "PrimaryCategory": "IT Service Management & Support",
+    "SecondaryCategory": "Databases & Data Management",
+    "ProjectTypes": "automation implementation, service optimization, incident management",
+    "Specialty": "Automation-driven problem and incident management for financial and retail platforms, including RCA automation, market data issue resolution, and service improvement initiatives.",
+    "Summary": "Experienced Problem Management Lead with 11+ years managing major incident response, RCA, and automation initiatives across financial services and retail. Proven track record reducing incident recurrence through automation and structured governance, with hands-on experience in market data platforms (Bloomberg, Reuters, Fidessa), Tableau reporting, SQL, and cloud technologies. ITIL 4 certified and skilled at leading cross-functional war rooms, vendor coordination, and service improvement programs.",
+    "LengthInUS": "136",
+    "YearsOfExperience": "11.33",
+    "AvgTenure": "2.83"
+  }
+}

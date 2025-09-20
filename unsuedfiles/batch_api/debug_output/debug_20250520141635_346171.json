@@ -1,0 +1,26 @@
+{
+  "userid": 346171,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Business Administration",
+    "SecondaryCategory": "Education",
+    "ProjectTypes": "Training program implementation, Learning management system integration, Change management initiatives",
+    "Specialty": "Organizational Learning and Development",
+    "Summary": "Brian Parker is a results-driven Senior Executive with over 16 years of experience in leading adult education, change management, and training initiatives. He has a proven track record of driving innovation through emerging technologies and streamlining operations. Brian excels in guiding organizations through digital transformation and has successfully managed large-scale training programs for healthcare and technology sectors. His expertise in project management, financial oversight, and client relationship management makes him a valuable asset for organizations looking to enhance their learning and development strategies.",
+    "TimeInUS": "16",
+    "YearsExperience": "16",
+    "AverageTenure": "2"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 6009,
+    "completion_tokens": 464,
+    "total_tokens": 6564,
+    "processing_time_seconds": 9.042481899261475,
+    "cost": {
+      "input_cost": 0.0060090000000000005,
+      "output_cost": 0.001392,
+      "total_cost": 0.0074010000000000005
+    }
+  }
+}

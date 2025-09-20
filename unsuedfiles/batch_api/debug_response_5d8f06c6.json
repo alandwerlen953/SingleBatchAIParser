@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Rohini",
+      "MiddleName": "NULL",
+      "LastName": "Josyula"
+    },
+    "Contact": {
+      "Phone": "+1313 757 5281",
+      "SecondaryPhone": "NULL",
+      "Email": "rohini.josyula@aogjob.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "NULL",
+      "Address": "NULL",
+      "City": "Livonia",
+      "State": "MI"
+    },
+    "Education": {
+      "BachelorsDegree": "NULL",
+      "MastersDegree": "Master of Science in Management Information Systems",
+      "Certifications": "NULL"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Humana",
+      "StartDate": "2023-07-01",
+      "EndDate": "Present",
+      "Location": "NULL"
+    },
+    "SecondMostRecent": {
+      "Company": "Version 1",
+      "StartDate": "2020-07-01",
+      "EndDate": "2022-07-01",
+      "Location": "NULL"
+    },
+    "ThirdMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FourthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Data Analyst",
+    "SecondaryTitle": "Healthcare Data Analyst",
+    "TertiaryTitle": "ETL Developer",
+    "PrimaryIndustry": "HealthCare",
+    "SecondaryIndustry": "Insurance",
+    "TopSkills": "Python, SQL, Power BI, AWS, EHR systems, ETL, Predictive Modeling, Statistical Analysis, Data Visualization, Data Governance"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "Python",
+    "SecondaryLanguage": "SQL",
+    "TertiaryLanguage": "R",
+    "SoftwareApp1": "Power BI",
+    "SoftwareApp2": "AWS",
+    "SoftwareApp3": "Tableau",
+    "SoftwareApp4": "SQL Server",
+    "SoftwareApp5": "NULL",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Data Analytics",
+    "SecondaryCategory": "Business Intelligence",
+    "ProjectTypes": "Data Migration, Predictive Modeling, ETL Automation",
+    "Specialty": "Healthcare Analytics and Data Processing",
+    "Summary": "Results-driven Data Analyst with 4 years of experience in healthcare analytics, specializing in claims processing, predictive modeling, and ETL automation. Proficient in Python, SQL, and Power BI, driving data-driven insights that optimize operations and policy decisions.",
+    "LengthInUS": "3",
+    "YearsOfExperience": "4",
+    "AvgTenure": "1"
+  }
+}

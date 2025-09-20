@@ -1,0 +1,48 @@
+{
+  "file_type": "debug_response",
+  "content_summary": {
+    "success": true,
+    "parsed_data_fields": 8,
+    "metrics": {
+      "model": "gpt-4o-mini",
+      "token_counts": {
+        "prompt_tokens": 4614,
+        "completion_tokens": 432,
+        "total_tokens": 5137
+      },
+      "processing_time": 8.168698787689209,
+      "cost": 0.00591
+    },
+    "has_raw_response": false
+  },
+  "fields_found": [
+    "PrimaryCategory",
+    "SecondaryCategory",
+    "ProjectTypes",
+    "Specialty",
+    "Summary",
+    "LengthinUS",
+    "YearsofExperience",
+    "AvgTenure"
+  ],
+  "missing_fields": [
+    "PrimaryTitle",
+    "SecondaryTitle",
+    "TertiaryTitle",
+    "FirstName",
+    "MiddleName",
+    "LastName",
+    "Email",
+    "Phone1",
+    "MostRecentCompany",
+    "MostRecentStartDate",
+    "MostRecentEndDate",
+    "PrimaryIndustry",
+    "SecondaryIndustry",
+    "PrimarySoftwareLanguage",
+    "SecondarySoftwareLanguage",
+    "SoftwareApp1",
+    "Hardware1"
+  ],
+  "userid": 1236940
+}

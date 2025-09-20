@@ -1,0 +1,26 @@
+{
+  "userid": 1236945,
+  "success": true,
+  "parsed_data": {
+    "PrimaryCategory": "Data Science",
+    "SecondaryCategory": "Software Development",
+    "ProjectTypes": "Data Analysis, Machine Learning Implementation, UI Optimization",
+    "Specialty": "Data Analysis and Machine Learning in Gaming and Education",
+    "Summary": "Carrie Chang is a highly skilled Data Analyst and Machine Learning specialist with a strong background in software development. With a Master's degree in Computer Science and extensive experience in data analysis, optimization, and machine learning, she has successfully contributed to projects in the gaming and education sectors. Her proficiency in Python, SQL, and data visualization tools like Tableau and Power BI, combined with her ability to drive revenue growth and enhance user experience, makes her a valuable asset for any organization looking to leverage data for strategic decision-making.",
+    "TimeInUS": "4",
+    "YearsExperience": "3",
+    "AverageTenure": "0"
+  },
+  "metrics": {
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4828,
+    "completion_tokens": 461,
+    "total_tokens": 5380,
+    "processing_time_seconds": 8.645996809005737,
+    "cost": {
+      "input_cost": 0.004828000000000001,
+      "output_cost": 0.0013830000000000001,
+      "total_cost": 0.006211000000000001
+    }
+  }
+}

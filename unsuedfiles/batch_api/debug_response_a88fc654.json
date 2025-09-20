@@ -1,0 +1,99 @@
+{
+  "PERSONAL_INFORMATION": {
+    "Name": {
+      "FirstName": "Christian",
+      "MiddleName": "NULL",
+      "LastName": "Garcia"
+    },
+    "Contact": {
+      "Phone": "6505853621",
+      "SecondaryPhone": "NULL",
+      "Email": "christiangarcia0718@gmail.com",
+      "SecondaryEmail": "NULL",
+      "LinkedIn": "https://www.linkedin.com/in/christian-garcia-166935383",
+      "Address": "Sacramento, CA 95831",
+      "City": "Sacramento",
+      "State": "CA"
+    },
+    "Education": {
+      "BachelorsDegree": "BS in Computer Science",
+      "MastersDegree": "NULL",
+      "Certifications": "NULL"
+    }
+  },
+  "WORK_HISTORY": {
+    "MostRecent": {
+      "Company": "Trinetix",
+      "StartDate": "2022-05-01",
+      "EndDate": "Present",
+      "Location": "Sacramento, CA"
+    },
+    "SecondMostRecent": {
+      "Company": "Primer",
+      "StartDate": "2019-11-01",
+      "EndDate": "2022-05-01",
+      "Location": "NULL"
+    },
+    "ThirdMostRecent": {
+      "Company": "Cape Analytics",
+      "StartDate": "2017-08-01",
+      "EndDate": "2019-10-01",
+      "Location": "NULL"
+    },
+    "FourthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "FifthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SixthMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    },
+    "SeventhMostRecent": {
+      "Company": "NULL",
+      "StartDate": "NULL",
+      "EndDate": "NULL",
+      "Location": "NULL"
+    }
+  },
+  "CAREER_INFO": {
+    "PrimaryTitle": "Senior AI Engineer",
+    "SecondaryTitle": "NLP Engineer",
+    "TertiaryTitle": "ML Engineer",
+    "PrimaryIndustry": "HealthCare",
+    "SecondaryIndustry": "Financial Services",
+    "TopSkills": "Python, C++, SQL, R, JavaScript, TypeScript, Py Torch, Tensor Flow, Keras, NLTK"
+  },
+  "TECHNICAL_INFO": {
+    "PrimaryLanguage": "Python",
+    "SecondaryLanguage": "SQL",
+    "TertiaryLanguage": "C++",
+    "SoftwareApp1": "Py Torch",
+    "SoftwareApp2": "Tensor Flow",
+    "SoftwareApp3": "Keras",
+    "SoftwareApp4": "NLTK",
+    "SoftwareApp5": "spa Cy",
+    "Hardware1": "NULL",
+    "Hardware2": "NULL",
+    "Hardware3": "NULL",
+    "Hardware4": "NULL",
+    "Hardware5": "NULL",
+    "PrimaryCategory": "Machine Learning",
+    "SecondaryCategory": "Natural Language Processing",
+    "ProjectTypes": "Implementation, Optimization, Deployment",
+    "Specialty": "AI product development in healthcare and finance",
+    "Summary": "Senior AI Engineer with 8 years of experience in designing and deploying AI products, specializing in healthcare and financial services. Proven expertise in machine learning, natural language processing, and building robust AI solutions with a focus on optimization and implementation.",
+    "LengthInUS": "NULL",
+    "YearsOfExperience": "8",
+    "AvgTenure": "2"
+  }
+}

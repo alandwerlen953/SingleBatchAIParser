@@ -56,7 +56,21 @@ def setup_parser():
                        help='Use unified single-step processing (more token efficient)')
     parser.add_argument('--quiet', action='store_true',
                        help='Suppress all logging output except errors')
-    
+    parser.add_argument('--batch-api', action='store_true',
+                       help='Use OpenAI Batch API for 50% cost savings (24hr processing)')
+    parser.add_argument('--check-batch', type=str,
+                       help='Check status of a specific batch job by ID')
+    parser.add_argument('--submit-batch', action='store_true',
+                       help='Submit a new batch job to OpenAI Batch API')
+    parser.add_argument('--monitor-batches', action='store_true',
+                       help='Continuously monitor all pending batch jobs')
+    parser.add_argument('--check-interval', type=int, default=30,
+                       help='Seconds between batch status checks (default: 30)')
+    parser.add_argument('--num-batches', type=int, default=1,
+                       help='Number of batches to submit (default: 1)')
+    parser.add_argument('--streaming', action='store_true',
+                       help='Use streaming batch submission (fetch and submit concurrently)')
+
     return parser
 
 def main():
@@ -94,20 +108,11 @@ def main():
         )
     
     # Import modules that need environment variables
-    from two_step_processor_taxonomy import (
-        process_single_resume_two_step, 
-        run_taxonomy_enhanced_batch,
-        BATCH_SIZE, MAX_WORKERS, USE_BATCH_API
-    )
     from resume_utils import get_resume_by_userid
-    
-    # Import values first
-    from two_step_processor_taxonomy import BATCH_SIZE as DEFAULT_BATCH_SIZE
-    from two_step_processor_taxonomy import MAX_WORKERS as DEFAULT_WORKERS
-    from two_step_processor_taxonomy import USE_BATCH_API as DEFAULT_USE_BATCH_API
-    
-    # Set module-level variables
-    import two_step_processor_taxonomy
+
+    # Set default values
+    DEFAULT_BATCH_SIZE = 25
+    DEFAULT_WORKERS = 4
     
     # Import unified processor if needed
     if args.unified:
@@ -118,25 +123,171 @@ def main():
         )
     
     # Override settings with command line arguments if provided
-    if args.batch_size:
-        two_step_processor_taxonomy.BATCH_SIZE = args.batch_size
-        logging.info(f"Setting batch size to {args.batch_size}")
-    else:
-        two_step_processor_taxonomy.BATCH_SIZE = DEFAULT_BATCH_SIZE
-        
-    if args.workers:
-        two_step_processor_taxonomy.MAX_WORKERS = args.workers
-        logging.info(f"Setting worker count to {args.workers}")
-    else:
-        two_step_processor_taxonomy.MAX_WORKERS = DEFAULT_WORKERS
-        
-    # Use batch API setting
-    two_step_processor_taxonomy.USE_BATCH_API = args.use_batch_api
+    batch_size = args.batch_size if args.batch_size else DEFAULT_BATCH_SIZE
+    workers = args.workers if args.workers else DEFAULT_WORKERS
+
+    logging.info(f"Using batch size: {batch_size}")
+    logging.info(f"Using worker count: {workers}")
     logging.info(f"Batch API setting: {args.use_batch_api}")
     
     try:
+        # Handle batch API operations first (separate flow)
+        if args.monitor_batches and not args.submit_batch:
+            logging.info(f"Starting batch monitoring mode (checking every {args.check_interval} seconds)")
+            logging.info("Monitoring all active batches...")
+            # TODO: Implement continuous monitoring for all active batches
+            logging.error("Batch monitoring is not yet implemented")
+            sys.exit(1)
+
+        elif args.check_batch:
+            logging.info(f"Checking batch job status: {args.check_batch}")
+            from batch_operations import check_and_process_batch
+            result = check_and_process_batch(args.check_batch)
+            if result:
+                if result['status'] == 'completed':
+                    logging.info(f"Batch completed: {result['success_count']} success, {result['failure_count']} failed")
+                    if 'successful_userids' in result:
+                        logging.info(f"Updated UserIDs: {result['successful_userids']}")
+                    if 'failed_userids' in result and result['failed_userids']:
+                        logging.info(f"Failed UserIDs: {result['failed_userids']}")
+                else:
+                    logging.info(f"Batch status: {result['status']}")
+            sys.exit(0)
+
+        elif args.submit_batch:
+            logging.info(f"Submitting {args.num_batches} batch job(s) to OpenAI Batch API")
+
+            batch_size = args.batch_size if args.batch_size else 25
+            submitted_batches = []
+
+            # Check if streaming mode is enabled
+            if args.streaming:
+                logging.info("Using STREAMING batch submission (fetch and submit concurrently)")
+                from batch_operations import submit_single_batch_streaming
+                from db_connection import get_resume_batch_paginated
+                import threading
+                import queue
+                import concurrent.futures
+
+                # Queue to track submitted batches
+                batch_queue = queue.Queue()
+                pending_batches = []
+                completed_batches = []
+
+                # Monitoring thread function
+                def monitor_batches():
+                    from batch_operations import check_and_process_batch
+                    while True:
+                        # Check if we should stop
+                        if batch_queue.empty() and len(pending_batches) == 0:
+                            time.sleep(5)  # Wait a bit to see if more batches come
+                            if batch_queue.empty() and len(pending_batches) == 0:
+                                break
+
+                        # Get new batches from queue
+                        while not batch_queue.empty():
+                            try:
+                                batch_info = batch_queue.get_nowait()
+                                pending_batches.append(batch_info['batch_id'])
+                                logging.info(f"Monitor: Added batch {batch_info['batch_id']} to monitoring")
+                            except queue.Empty:
+                                break
+
+                        # Check status of pending batches
+                        for batch_id in pending_batches[:]:
+                            result = check_and_process_batch(batch_id)
+                            if result and result.get('status') in ['completed', 'failed', 'expired']:
+                                logging.info(f"Monitor: Batch {batch_id} finished with status: {result['status']}")
+                                pending_batches.remove(batch_id)
+                                completed_batches.append(batch_id)
+
+                        time.sleep(args.check_interval)
+
+                # Start monitoring thread
+                monitor_thread = threading.Thread(target=monitor_batches, daemon=True)
+                monitor_thread.start()
+
+                # Submit batches in streaming fashion
+                # Always use offset 0 because processed records are excluded from query
+                for i in range(args.num_batches):
+                    logging.info(f"\nStreaming batch {i+1} of {args.num_batches}...")
+
+                    # Fetch next batch of resumes (always at offset 0 since processed ones are excluded)
+                    resume_batch = get_resume_batch_paginated(batch_size=batch_size, offset=0)
+
+                    if not resume_batch:
+                        logging.info(f"No more resumes found")
+                        break
+
+                    # Submit batch immediately
+                    result = submit_single_batch_streaming(resume_batch, workers=args.workers)
+
+                    if result:
+                        submitted_batches.append(result['batch_id'])
+                        batch_queue.put(result)
+                        logging.info(f"Batch {i+1} submitted: {result['batch_id']}")
+                        logging.info(f"  - Submitted {result['resume_count']} resumes")
+                    else:
+                        logging.error(f"Failed to submit batch {i+1}")
+
+                # Wait for monitoring to complete
+                logging.info("\nAll batches submitted. Waiting for processing to complete...")
+                monitor_thread.join()
+                logging.info(f"All {len(completed_batches)} batches have been processed!")
+
+            else:
+                # Original non-streaming mode
+                logging.info("Using standard (non-streaming) batch submission")
+                from batch_operations import submit_resume_batch
+
+                # Submit multiple batches
+                for i in range(args.num_batches):
+                    logging.info(f"\nSubmitting batch {i+1} of {args.num_batches}...")
+                    result = submit_resume_batch(batch_size=batch_size)
+
+                    if result:
+                        submitted_batches.append(result['batch_id'])
+                        logging.info(f"Batch {i+1} submitted: {result['batch_id']}")
+                        logging.info(f"  - Submitted {result['resume_count']} resumes")
+
+                        # Add small delay between batch submissions to avoid rate limits
+                        if i < args.num_batches - 1:
+                            time.sleep(2)
+                    else:
+                        logging.error(f"Failed to submit batch {i+1}")
+
+            # Summary
+            if submitted_batches:
+                logging.info(f"\n{'='*60}")
+                logging.info(f"Successfully submitted {len(submitted_batches)} batches:")
+                for batch_id in submitted_batches:
+                    logging.info(f"  - {batch_id}")
+                logging.info(f"\nCheck all batches with: python main.py --monitor-batches")
+                logging.info(f"Check specific batch with: python main.py --check-batch BATCH_ID")
+
+                # Start monitoring if requested
+                if args.monitor_batches:
+                    logging.info(f"\nStarting batch monitoring (checking every {args.check_interval} seconds)...")
+                    from batch_operations import check_and_process_batch
+
+                    # Monitor all submitted batches
+                    pending_batches = submitted_batches.copy()
+                    while pending_batches:
+                        for batch_id in pending_batches[:]:  # Use slice to avoid modification during iteration
+                            result = check_and_process_batch(batch_id)
+                            if result and result.get('status') in ['completed', 'failed', 'expired']:
+                                logging.info(f"Batch {batch_id} finished with status: {result['status']}")
+                                pending_batches.remove(batch_id)
+
+                        if pending_batches:
+                            logging.info(f"Still monitoring {len(pending_batches)} batches...")
+                            time.sleep(args.check_interval)
+
+                    logging.info("All batches have been processed!")
+            sys.exit(0)
+
         # Single user mode
-        if args.userid:
+        elif args.userid:
             logging.info(f"Processing single user with ID: {args.userid}")
 
             # Fetch the resume
