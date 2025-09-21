@@ -59,3 +59,8 @@ debug_*.log
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
+
+# Batch input files (too large for GitHub)
+batch_input_*.jsonl
+pythonProject2/batch_input_*.jsonl
+unsuedfiles/batch_api/batch_input_*.jsonl
