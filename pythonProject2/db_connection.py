@@ -710,17 +710,22 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
         # Fixed date comparison to use date-only comparison for better matching
         query = f"""
             SELECT
-                userid,
-                markdownResume as cleaned_resume
-            FROM dbo.aicandidate WITH (NOLOCK)
-            WHERE LastProcessed IS NULL
-                AND markdownresume <> ''
-                AND markdownresume IS NOT NULL
-                AND lastprocessedmarkdown IS NOT NULL
-                AND CAST(lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -93, GETDATE()) AS DATE)
-                AND datediff(year, datelastmodified, GETDATE()) <= 5
-
-            ORDER BY lastprocessedmarkdown asc
+                ac.userid,
+                ac.markdownResume as cleaned_resume
+            FROM dbo.aicandidate ac WITH (NOLOCK)
+            LEFT JOIN dbo.AIBlacklist_PhoneNumbers bp ON bp.UserID = ac.userid
+            LEFT JOIN dbo.AIBlacklist_EmailAddresses be ON be.UserID = ac.userid
+            WHERE ac.LastProcessed IS NULL
+                AND ac.markdownresume <> ''
+                AND ac.markdownresume IS NOT NULL
+                AND ac.lastprocessedmarkdown IS NOT NULL
+                AND CAST(ac.lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -3, GETDATE()) AS DATE)
+                AND datediff(year, ac.datelastmodified, GETDATE()) <= 5
+                AND ac.primarytitle IS NULL
+                AND ac.skill1 IS NULL
+                AND bp.UserID IS NULL  -- Not in phone blacklist
+                AND be.UserID IS NULL  -- Not in email blacklist
+            ORDER BY ac.lastprocessedmarkdown asc
         """
 
         logger.info(f"Executing SQL query to fetch unprocessed resumes...")
