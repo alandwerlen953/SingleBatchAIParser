@@ -89,7 +89,7 @@ def main():
             level=logging.ERROR,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log"),
+                logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log", encoding='utf-8'),
                 logging.StreamHandler(sys.stdout)
             ]
         )
@@ -102,7 +102,7 @@ def main():
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log"),
+                logging.FileHandler(f"parser_{datetime.now().strftime('%Y%m%d')}.log", encoding='utf-8'),
                 logging.StreamHandler(sys.stdout)
             ]
         )
