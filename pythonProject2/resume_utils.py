@@ -40,11 +40,51 @@ if not logging.getLogger().handlers:
     force=True
 )
 
+# Try to load .env file first
+from dotenv import load_dotenv
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(script_dir, '.env')
+
+logging.info("Checking for .env file at: %s", env_path)
+if os.path.exists(env_path):
+    logging.info(".env file found, attempting to load...")
+    load_dotenv(env_path)
+    logging.info("Loaded .env file from: %s", env_path)
+else:
+    logging.warning(".env file not found at: %s", env_path)
+    logging.info("Attempting to load from default dotenv locations...")
+    load_dotenv()
+
 # Set up OpenAI client
+logging.info("Attempting to load OpenAI API key from environment...")
 api_key = os.getenv('OPENAI_API_KEY')
-openai.api_key = api_key
-if not api_key:
-    logging.error("API key is not set in the environment variables.")
+
+if api_key:
+    # Mask the key for security but show enough to verify it's loaded
+    masked_key = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "KEY_TOO_SHORT"
+    logging.info(f"OpenAI API key successfully loaded: {masked_key}")
+    openai.api_key = api_key
+else:
+    logging.error("=" * 80)
+    logging.error("CRITICAL ERROR: OPENAI_API_KEY is not set in the environment variables!")
+    logging.error("Checked environment variable: OPENAI_API_KEY")
+    logging.error("Current working directory: %s", os.getcwd())
+    logging.error("Looking for .env file at: %s", os.path.join(os.getcwd(), '.env'))
+
+    # Check if .env file exists
+    env_path = os.path.join(os.getcwd(), '.env')
+    if os.path.exists(env_path):
+        logging.error(".env file EXISTS at %s but API key not loaded", env_path)
+        logging.error("Make sure .env file contains: OPENAI_API_KEY=your_key_here")
+    else:
+        logging.error(".env file NOT FOUND at %s", env_path)
+
+    logging.error("Environment variables starting with 'OPENAI': %s",
+                  [k for k in os.environ.keys() if 'OPENAI' in k.upper()])
+    logging.error("Running as user: %s", os.environ.get('USERNAME', 'UNKNOWN'))
+    logging.error("=" * 80)
+    logging.error("Cannot proceed without API key. Exiting with error code 1.")
+    sys.exit(1)  # Exit with error code
 
 # Default model and configuration
 DEFAULT_MODEL = "gpt-5-mini-2025-08-07"  # Changed to GPT-5-mini
