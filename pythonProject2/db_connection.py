@@ -608,7 +608,8 @@ def get_resume_batch_paginated(batch_size=5000, offset=0, max_retries=3):
             LEFT JOIN dbo.AIBlacklist_PhoneNumbers bp ON bp.UserID = ac.userid
             LEFT JOIN dbo.AIBlacklist_EmailAddresses be ON be.UserID = ac.userid
             WHERE ac.LastProcessed IS NULL
-                AND ac.markdownresume <> ''
+                AND LTRIM(RTRIM(ac.markdownresume)) <> ''
+                AND LEN(LTRIM(RTRIM(ac.markdownresume))) > 1
                 AND ac.markdownresume IS NOT NULL
                 AND ac.lastprocessedmarkdown IS NOT NULL
                 AND CAST(ac.lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -3, GETDATE()) AS DATE)
@@ -716,7 +717,8 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
             LEFT JOIN dbo.AIBlacklist_PhoneNumbers bp ON bp.UserID = ac.userid
             LEFT JOIN dbo.AIBlacklist_EmailAddresses be ON be.UserID = ac.userid
             WHERE ac.LastProcessed IS NULL
-                AND ac.markdownresume <> ''
+                AND LTRIM(RTRIM(ac.markdownresume)) <> ''
+                AND LEN(LTRIM(RTRIM(ac.markdownresume))) > 1
                 AND ac.markdownresume IS NOT NULL
                 AND ac.lastprocessedmarkdown IS NOT NULL
                 AND CAST(ac.lastprocessedmarkdown AS DATE) >= CAST(DATEADD(month, -3, GETDATE()) AS DATE)

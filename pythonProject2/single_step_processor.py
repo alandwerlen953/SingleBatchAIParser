@@ -636,10 +636,10 @@ def run_unified_batch():
     try:
         from two_step_processor_taxonomy import BATCH_SIZE, MAX_WORKERS
         
-        # Get a batch of resumes
+        # Get ALL resumes that match criteria - no limit
         logging.info("Fetching ALL unprocessed resumes matching criteria...")
         fetch_start_time = time.time()
-        resume_batch = get_resume_batch(BATCH_SIZE)
+        resume_batch = get_resume_batch(99999)  # Large number to get all matching records
         fetch_time = time.time() - fetch_start_time
 
         if not resume_batch:

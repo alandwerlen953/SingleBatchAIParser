@@ -345,4 +345,10 @@ def main():
         sys.exit(1)
         
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(f"Fatal error in main: {str(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        sys.exit(1)
