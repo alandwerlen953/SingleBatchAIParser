@@ -87,7 +87,7 @@ else:
     sys.exit(1)  # Exit with error code
 
 # Default model and configuration
-DEFAULT_MODEL = "gpt-5-mini-2025-08-07"  # Changed to GPT-5-mini
+DEFAULT_MODEL = "gpt-4o-mini-2024-07-18"  # Cheapest option
 MAX_TOKENS = 16000
 DEFAULT_TEMPERATURE = 0
 

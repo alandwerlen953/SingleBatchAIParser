@@ -707,13 +707,14 @@ def extract_step2_fields_directly(response_text):
         "ProjectTypes": [
             r"Types of projects they have worked on:\s*(.+)"
         ],
-        "Specialty": [
-            r"Based on their skills, categories, certifications, and industries, determine what they specialize in:\s*(.+)"
-        ],
-        "Summary": [
-            r"Based on all this knowledge, write a summary of this candidate that could be sellable to an employer:\s*(.+)",
-            r"Based on all this knowledge, write a summary of this candidate:\s*(.+)"
-        ],
+        # DISABLED to reduce output tokens
+        # "Specialty": [
+        #     r"Based on their skills, categories, certifications, and industries, determine what they specialize in:\s*(.+)"
+        # ],
+        # "Summary": [
+        #     r"Based on all this knowledge, write a summary of this candidate that could be sellable to an employer:\s*(.+)",
+        #     r"Based on all this knowledge, write a summary of this candidate:\s*(.+)"
+        # ],
         "LengthinUS": [
             r"How long have they lived in the United States\(numerical answer only\):\s*(.+)"
         ],
@@ -820,8 +821,9 @@ def parse_step2_response(response_text):
         "Based on their skills, put them in a primary technical category": "PrimaryCategory",
         "Based on their skills, put them in a subsidiary technical category": "SecondaryCategory",
         "Types of projects they have worked on": "ProjectTypes",
-        "Based on their skills, categories, certifications, and industries, determine what they specialize in": "Specialty",
-        "Based on all this knowledge, write a summary of this candidate that could be sellable to an employer": "Summary",
+        # DISABLED to reduce output tokens
+        # "Based on their skills, categories, certifications, and industries, determine what they specialize in": "Specialty",
+        # "Based on all this knowledge, write a summary of this candidate that could be sellable to an employer": "Summary",
         "How long have they lived in the United States(numerical answer only)": "LengthinUS",
         "Total years of professional experience (numerical answer only)": "YearsofExperience",
         "Average tenure at companies in years (numerical answer only)": "AvgTenure"
@@ -1128,8 +1130,9 @@ def prepare_update_data(enhanced_results, step1_results=None, skills_list=None):
         "PrimaryCategory": enhanced_results.get("PrimaryCategory", ""),
         "SecondaryCategory": enhanced_results.get("SecondaryCategory", ""),
         "ProjectTypes": enhanced_results.get("ProjectTypes", ""),
-        "Specialty": enhanced_results.get("Specialty", ""),
-        "Summary": enhanced_results.get("Summary", ""),
+        # DISABLED to reduce output tokens
+        # "Specialty": enhanced_results.get("Specialty", ""),
+        # "Summary": enhanced_results.get("Summary", ""),
         "LengthinUS": enhanced_results.get("LengthinUS", ""),
         "YearsofExperience": enhanced_results.get("YearsofExperience", ""),
         "AvgTenure": enhanced_results.get("AvgTenure", ""),
@@ -1145,9 +1148,9 @@ def process_single_resume_two_step(resume_data):
         
         # Calculate token count and cost
         resume_token_count = num_tokens_from_string(resume_text)
-        input_cost_step1 = resume_token_count * 0.000000075  # $0.075 per million tokens for input (step 1)
+        input_cost_step1 = resume_token_count * 0.00000025  # $0.25 per million tokens for input (GPT-5 mini)
         estimated_output_tokens = 500
-        output_cost_step1 = estimated_output_tokens * 0.00000030  # $0.30 per million tokens for output
+        output_cost_step1 = estimated_output_tokens * 0.000002  # $2.00 per million tokens for output (GPT-5 mini)
         
         logging.info(f"UserID {userid}: {resume_token_count} tokens")
         
@@ -1168,6 +1171,13 @@ def process_single_resume_two_step(resume_data):
         )
         
         step1_time = time.time() - step1_start_time
+
+        # Capture actual token usage from API response
+        step1_actual_tokens = 0
+        if hasattr(step1_response, 'usage'):
+            step1_actual_tokens = step1_response.usage.total_tokens
+            logging.info(f"UserID {userid}: Step 1 actual tokens - Input: {step1_response.usage.prompt_tokens}, Output: {step1_response.usage.completion_tokens}")
+
         logging.info(f"UserID {userid}: Taxonomy-enhanced Step 1 completed in {step1_time:.2f}s")
         
         if not step1_response or not step1_response.choices:
@@ -1201,8 +1211,8 @@ def process_single_resume_two_step(resume_data):
         # Calculate cost for step 2
         step2_prompt_text = "\n".join(msg["content"] for msg in step2_messages)
         step2_token_count = num_tokens_from_string(step2_prompt_text)
-        input_cost_step2 = step2_token_count * 0.000000075  # $0.075 per million tokens for input (step 2)
-        output_cost_step2 = estimated_output_tokens * 0.00000030  # $0.30 per million tokens for output
+        input_cost_step2 = step2_token_count * 0.00000025  # $0.25 per million tokens for input (GPT-5 mini)
+        output_cost_step2 = estimated_output_tokens * 0.000002  # $2.00 per million tokens for output (GPT-5 mini)
         
         total_cost = input_cost_step1 + output_cost_step1 + input_cost_step2 + output_cost_step2
         logging.info(f"UserID {userid}: Step 2 tokens: {step2_token_count}, Est. total cost: ${total_cost:.6f}")
@@ -1217,6 +1227,13 @@ def process_single_resume_two_step(resume_data):
         )
         
         step2_time = time.time() - step2_start_time
+
+        # Capture actual token usage from API response
+        step2_actual_tokens = 0
+        if hasattr(step2_response, 'usage'):
+            step2_actual_tokens = step2_response.usage.total_tokens
+            logging.info(f"UserID {userid}: Step 2 actual tokens - Input: {step2_response.usage.prompt_tokens}, Output: {step2_response.usage.completion_tokens}")
+
         logging.info(f"UserID {userid}: Taxonomy-enhanced Step 2 completed in {step2_time:.2f}s")
         
         if not step2_response or not step2_response.choices:
@@ -1389,7 +1406,9 @@ def process_single_resume_two_step(resume_data):
             'processing_time': total_time,
             'step1_time': step1_time,
             'step2_time': step2_time,
-            'token_count': resume_token_count + step2_token_count,
+            'token_count': step1_actual_tokens + step2_actual_tokens if (step1_actual_tokens and step2_actual_tokens) else resume_token_count + step2_token_count,
+            'actual_input_tokens': (step1_response.usage.prompt_tokens + step2_response.usage.prompt_tokens) if (hasattr(step1_response, 'usage') and hasattr(step2_response, 'usage')) else 0,
+            'actual_output_tokens': (step1_response.usage.completion_tokens + step2_response.usage.completion_tokens) if (hasattr(step1_response, 'usage') and hasattr(step2_response, 'usage')) else 0,
             'cost': total_cost
         }
     
@@ -1634,13 +1653,16 @@ def process_batch_with_shared_prompts(resume_batch):
                         overhead_tokens = 100
                         total_tokens += overhead_tokens
                         
-                        # Calculate cost - matching what you're seeing
-                        input_cost_rate = 0.000000075  # $0.075 per million tokens for input
-                        output_cost_rate = 0.00000030  # $0.30 per million tokens for output
+                        # Calculate cost - GPT-5 mini pricing
+                        input_cost_rate = 0.00000025  # $0.25 per million tokens for input (GPT-5 mini)
+                        output_cost_rate = 0.000002  # $2.00 per million tokens for output (GPT-5 mini)
                         
                         # Accurately account for both API calls
                         input_cost = total_tokens * input_cost_rate
-                        output_cost = 1000 * output_cost_rate  # Estimate 1000 output tokens
+                        # More realistic output estimate based on actual usage
+                        # Each step typically generates 500-1000 tokens
+                        estimated_output_tokens_total = 1500  # Total for both steps
+                        output_cost = estimated_output_tokens_total * output_cost_rate
                         total_cost = input_cost + output_cost
                         
                         # Log the token calculation details
@@ -1769,7 +1791,17 @@ def run_taxonomy_enhanced_batch():
         
         if results:
             total_tokens = sum(r.get('token_count', 0) for r in results)
-            total_cost = sum(r.get('cost', 0) for r in results)
+            total_actual_input = sum(r.get('actual_input_tokens', 0) for r in results)
+            total_actual_output = sum(r.get('actual_output_tokens', 0) for r in results)
+
+            # Calculate actual cost based on real token usage if available
+            if total_actual_input > 0 and total_actual_output > 0:
+                actual_input_cost = total_actual_input * 0.00000025  # $0.25 per million for GPT-5 mini
+                actual_output_cost = total_actual_output * 0.000002  # $2.00 per million for GPT-5 mini
+                total_cost = actual_input_cost + actual_output_cost
+                logging.info(f"Actual token usage - Input: {total_actual_input:,}, Output: {total_actual_output:,}")
+            else:
+                total_cost = sum(r.get('cost', 0) for r in results)
             avg_processing_time = sum(r.get('processing_time', 0) for r in results if 'processing_time' in r) / len([r for r in results if 'processing_time' in r]) if any('processing_time' in r for r in results) else 0
             
             # Check if we're using batch API (may not have step1_time and step2_time in results)
@@ -1819,7 +1851,7 @@ def run_taxonomy_enhanced_batch():
             
             # Calculate token savings from shared prompts
             token_savings = total_system_tokens_if_not_shared - total_system_tokens_shared
-            cost_savings = token_savings * 0.000000075  # $0.075 per million tokens
+            cost_savings = token_savings * 0.00000025  # $0.25 per million tokens (GPT-5 mini)
             
             # Calculate percentage savings
             avg_tokens_per_resume = total_tokens / len(resume_batch)
@@ -1855,8 +1887,12 @@ def run_taxonomy_enhanced_batch():
         logging.info(f"- Average Step 2 time: {avg_step2_time:.2f} seconds")
         logging.info(f"- Successfully processed: {len(successful)}/{len(resume_batch)}")
         logging.info(f"- Failed: {len(failed)}/{len(resume_batch)}")
-        logging.info(f"- Total input/output tokens: {total_tokens}")
-        logging.info(f"- Estimated total cost: ${total_cost:.4f}")
+        if 'total_actual_input' in locals() and total_actual_input > 0:
+            logging.info(f"- Total actual tokens - Input: {total_actual_input:,}, Output: {total_actual_output:,}")
+            logging.info(f"- Total cost (actual): ${total_cost:.4f}")
+        else:
+            logging.info(f"- Total estimated tokens: {total_tokens}")
+            logging.info(f"- Estimated total cost: ${total_cost:.4f}")
         
         # Log batch summary to error file
         error_logger.log_batch_summary(

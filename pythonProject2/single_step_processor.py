@@ -153,13 +153,13 @@ def create_unified_prompt(resume_text, userid=None):
                        "Use a mix of words like but not limited to implementation, "
                        "integration, migration, move, deployment, optimization, consolidation and make it 2-3 words."
         },
-        # Specialty rules
-        {
-            "role": "system",
-            "content": "Use the following rules when assessing their Specialty:"
-                       "For their specialty, emphasize the project types they have done and relate them to "
-                       "their industry."
-        },
+        # Specialty rules - DISABLED to reduce output tokens
+        # {
+        #     "role": "system",
+        #     "content": "Use the following rules when assessing their Specialty:"
+        #                "For their specialty, emphasize the project types they have done and relate them to "
+        #                "their industry."
+        # },
         # Category rules
         {
             "role": "system",
@@ -167,13 +167,13 @@ def create_unified_prompt(resume_text, userid=None):
                        "For the categories, do not repeat the same category."
                        "Both categories MUST have an answer!"
         },
-        # Summary rules
-        {
-            "role": "system",
-            "content": "Use the following rules when writing their summary:"
-                       "For their summary, give a brief summary of their resume in a few sentences."
-                       "Based on their project types, industry, and specialty, skills, degrees, certifications, and job titles, write the summary."
-        },
+        # Summary rules - DISABLED to reduce output tokens
+        # {
+        #     "role": "system",
+        #     "content": "Use the following rules when writing their summary:"
+        #                "For their summary, give a brief summary of their resume in a few sentences."
+        #                "Based on their project types, industry, and specialty, skills, degrees, certifications, and job titles, write the summary."
+        # },
         # Length in US rules
         {
             "role": "system",
@@ -332,8 +332,6 @@ def create_unified_prompt(resume_text, userid=None):
                       "- Based on their skills, put them in a primary technical category (Choose from standard technical categories like Software Development, Cloud/DevOps, Data/Analytics, Infrastructure/Networking, Cybersecurity, Database Administration, QA/Testing, Project Management, Business Analysis, UI/UX Design, Hardware/Embedded, AI/Machine Learning, Mobile Development, Enterprise Systems, or Other):\n"
                       "- Based on their skills, put them in a subsidiary technical category (Must be different from primary. Choose from same categories):\n"
                       "- Types of projects they have worked on (Use action-oriented phrases that describe what they've accomplished, focusing on implementations, migrations, integrations, optimizations, deployments, etc.):\n"
-                      "- Based on their skills, categories, certifications, and industries, determine what they specialize in (Be specific about their niche expertise using a 3-7 word phrase that captures their core specialization and distinguishes them):\n"
-                      "- Based on all this knowledge, write a summary of this candidate that could be sellable to an employer:\n"
                       "- How long have they worked in the United States in YEARS (numerical answer only, use decimals like 0.5 for 6 months). If all jobs are in US or no location specified, calculate from earliest job to most recent/present:\n"
                       "- Total years of professional experience (numerical answer only) - IMPORTANT: Calculate from the earliest job start date to the most recent job end date. If the most recent job says 'Present', 'Current', or similar, use today's date as the end date. Do NOT sum up individual job durations as jobs may overlap. For example, if someone worked from 2015-2018 and 2017-2020, the total is 5 years (2015-2020), not 6 years. If they started in 2015 and their current job is 'Present', calculate from 2015 to today:\n"
                       "- Average tenure at companies in years (numerical answer only) - Calculate by dividing total experience by number of different companies. Only count each company once even if they had multiple positions there:"
@@ -396,9 +394,9 @@ def process_single_resume_unified(resume_data):
         
         # Calculate token count for cost estimation
         resume_token_count = num_tokens_from_string(resume_text)
-        input_cost = resume_token_count * 0.000000075  # $0.075 per million tokens for input
+        input_cost = resume_token_count * 0.00000025  # $0.25 per million tokens for input (GPT-5 mini)
         estimated_output_tokens = 1000
-        output_cost = estimated_output_tokens * 0.00000030  # $0.30 per million tokens for output
+        output_cost = estimated_output_tokens * 0.000002  # $2.00 per million tokens for output (GPT-5 mini)
         total_cost = input_cost + output_cost
         
         logging.info(f"UserID {userid}: {resume_token_count} tokens, Est. cost: ${total_cost:.6f}")
