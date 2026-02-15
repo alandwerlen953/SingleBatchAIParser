@@ -1,10 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(find:*)",
+      "Bash(/usr/bin/python3:*)",
+      "Bash(cmd.exe /c \"..\\\\venv\\\\Scripts\\\\python.exe main.py --help\")",
+      "Bash(cmd.exe /c \"..\\\\venv\\\\Scripts\\\\python.exe main.py --unified --userid 12345\")",
+      "Bash(cmd.exe /c \"..\\\\venv\\\\Scripts\\\\python.exe -c \"\"from db_connection import get_connection; conn = get_connection\\(\\); cursor = conn.cursor\\(\\); cursor.execute\\(''SELECT TOP 1 userid FROM dbo.aicandidate WHERE LastProcessed IS NULL AND markdownresume IS NOT NULL AND LTRIM\\(RTRIM\\(markdownresume\\)\\) != \\\\\"\"\\\\\"\"''\\); row = cursor.fetchone\\(\\); print\\(row[0] if row else ''No users found''\\); conn.close\\(\\)\"\"\")",
+      "Bash(cmd.exe /c \"..\\\\venv\\\\Scripts\\\\python.exe db_connection.py\")",
+      "Bash(cmd.exe /c \"..\\\\venv\\\\Scripts\\\\python.exe find_user.py\")",
+      "Bash(cmd.exe /c \"..\\\\venv\\\\Scripts\\\\python.exe test_response.py\")",
+      "Bash(pip3 install:*)",
+      "Bash(python3:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
   },
-  "enableAllProjectMcpServers": false
+  "enableAllProjectMcpServers": false,
+  "disabledMcpjsonServers": [
+    "sequential-thinking"
+  ]
 }

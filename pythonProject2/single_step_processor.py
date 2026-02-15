@@ -273,7 +273,7 @@ def create_unified_prompt(resume_text, userid=None):
                       "- Address:\n"
                       "- City (IMPORTANT: First check if they explicitly state where they live. If not stated and their current job is not listed as remote, use the city of their current employer's location. Only return NULL if neither is available):\n"
                       "- State (IMPORTANT: First check if they explicitly state where they live. If not stated and their current job is not listed as remote, use the state of their current employer's location. Only return NULL if neither is available):\n"
-                      "- Zipcode:\n"
+                      "- Zipcode(IMPORTANT: 5 digit zip only, no zip+4. If a zip code is explicitly on the resume use it. If the candidate lists a personal city and state but no zip, provide a well-known zip code for that city. If the candidate does NOT list a personal location and you inferred city/state from their employer, put NULL for zipcode - do NOT infer a zip from job/company locations):\n"
                       "- Phone1:\n"
                       "- Phone2:\n"
                       "- Email:\n"

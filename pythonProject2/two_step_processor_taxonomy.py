@@ -222,11 +222,12 @@ def extract_fields_directly(response_text):
             r"State:\s*(.+)"
         ],
         "ZipCode": [
-            r"Their Zip Code:\s*(.+)",
-            r"Zip Code:\s*(.+)",
-            r"Their Zip:\s*(.+)",
-            r"Zip:\s*(.+)",
-            r"Zipcode:\s*(.+)"  # Add pattern for single_step_processor format
+            r"Their Zipcode\([^)]*\):\s*([^\n]+)",
+            r"Their Zipcode:\s*([^\n]+)",
+            r"Zipcode\([^)]*\):\s*([^\n]+)",
+            r"Zipcode:\s*([^\n]+)",
+            r"Zip Code:\s*([^\n]+)",
+            r"Zip:\s*([^\n]+)"
         ],
         "Phone1": [
             r"Their Phone Number:\s*(.+)",
