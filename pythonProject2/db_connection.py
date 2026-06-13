@@ -667,6 +667,16 @@ def get_resume_batch_paginated(batch_size=5000, offset=0, max_retries=3):
         return []
 
 # Utility function to get a batch of resumes with retry logic
+# Userids quarantined this run because they failed repeatedly (poison resumes).
+# Persists across batch fetches (NOT cleared by reset_skipped) so a resume that
+# always fails stops getting re-selected and looping forever. Cleared only on
+# process restart, so a transient bad spell gets a fresh chance next launch.
+_quarantined_userids = set()
+
+def add_quarantined_userid(userid):
+    """Mark a userid as quarantined so future batch fetches exclude it."""
+    _quarantined_userids.add(int(userid))
+
 def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True):
     """
     Get a batch of unprocessed resumes with retry logic
@@ -705,7 +715,13 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
             logger.info(f"Currently skipped userids ({len(skipped_ids)}): {sorted(skipped_ids)}")
         else:
             logger.info("No userids currently in skipped list")
-        
+
+        # Build the quarantine exclusion clause (poison resumes that keep failing).
+        # '0' is a safe no-op placeholder when nothing is quarantined yet.
+        quarantined_ids_str = ','.join(str(id) for id in _quarantined_userids) or '0'
+        if _quarantined_userids:
+            logger.info(f"Excluding {len(_quarantined_userids)} quarantined userids: {sorted(_quarantined_userids)}")
+
         # Query to get ALL unprocessed resumes from the last 3 days where markdownResume is processed but not LastProcessed
         # Removed TOP clause to process all matching records
         # Fixed date comparison to use date-only comparison for better matching
@@ -727,6 +743,7 @@ def get_resume_batch_with_retry(batch_size=25, max_retries=3, reset_skipped=True
                 AND ac.skill1 IS NULL
                 AND bp.UserID IS NULL  -- Not in phone blacklist
                 AND be.UserID IS NULL  -- Not in email blacklist
+                AND ac.userid NOT IN ({quarantined_ids_str})  -- Not quarantined this run
             ORDER BY ac.lastprocessedmarkdown asc
         """
 

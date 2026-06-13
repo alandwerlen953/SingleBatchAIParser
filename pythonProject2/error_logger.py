@@ -33,6 +33,14 @@ class ErrorLogger:
             self.log_directory,
             f"candidate_errors_{datetime.now().strftime('%Y%m%d')}.log"
         )
+
+        # Dedicated quarantine log: a clean, easy-to-scan file listing only the
+        # userids that have failed repeatedly and are now being skipped. Kept
+        # separate from the noisy error log so it can be opened and read at a glance.
+        self.quarantine_filename = os.path.join(
+            self.log_directory,
+            f"candidate_quarantine_{datetime.now().strftime('%Y%m%d')}.log"
+        )
         
         # Create a separate logger instance
         self.logger = logging.getLogger('candidate_error_logger')
@@ -120,7 +128,27 @@ class ErrorLogger:
         # Log as WARNING
         self.logger.warning(message, extra=extra)
     
-    def log_batch_summary(self, total_processed: int, successful: int, failed: int, 
+    def log_quarantine(self, userid: str, failure_count: int, last_error: str):
+        """
+        Record a userid that has failed repeatedly and is now being quarantined
+        (skipped) so it stops looping forever. Written to a dedicated, easy-to-scan
+        file so you can open it on the server and immediately see what is stuck.
+
+        Args:
+            userid: The user ID being quarantined
+            failure_count: How many times it has failed this run
+            last_error: The most recent error message for this userid
+        """
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        line = (
+            f"{timestamp} | QUARANTINED | UserID: {userid} | "
+            f"Failures: {failure_count} | LastError: {last_error}\n"
+        )
+        # Write directly so it is always captured regardless of quiet mode.
+        with open(self.quarantine_filename, 'a', encoding='utf-8') as f:
+            f.write(line)
+
+    def log_batch_summary(self, total_processed: int, successful: int, failed: int,
                          warnings: int = 0):
         """
         Log a summary of batch processing results.

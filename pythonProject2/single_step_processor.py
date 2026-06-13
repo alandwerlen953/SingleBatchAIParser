@@ -413,9 +413,13 @@ def process_single_resume_unified(resume_data):
         model_params = get_model_params(DEFAULT_MODEL)
 
         # Build API call parameters
+        # timeout: hard socket-level cap so a hung connection can never freeze the
+        #   worker thread forever (default SDK behavior can hang the whole batch).
+        #   max_retries is configured module-globally in resume_utils.py.
         api_params = {
             "model": DEFAULT_MODEL,
-            "messages": unified_messages
+            "messages": unified_messages,
+            "timeout": 90
         }
 
         # Only add temperature if model supports custom values
@@ -678,10 +682,12 @@ def run_unified_batch():
                     # Log success/failure
                     if result.get('success', False):
                         logging.info(f"[{completed_count}/{total_futures}] UserID {userid} SUCCESS in {result.get('processing_time', 0):.2f}s")
+                        _record_outcome(userid, True)
                     else:
                         logging.error(f"[{completed_count}/{total_futures}] UserID {userid} FAILED: {result.get('error', 'Unknown error')}")
                         # Already logged in process_single_resume_unified
-                        
+                        _record_outcome(userid, False, result.get('error', 'Unknown error'))
+
                 except concurrent.futures.TimeoutError:
                     logging.error(f"[{completed_count}/{total_futures}] UserID {userid} TIMEOUT after 5 minutes")
 
@@ -697,6 +703,7 @@ def run_unified_batch():
                         'success': False,
                         'error': 'Processing timeout'
                     })
+                    _record_outcome(userid, False, 'Processing timeout')
 
                 except Exception as e:
                     logging.error(f"[{completed_count}/{total_futures}] UserID {userid} EXCEPTION: {str(e)}")
@@ -713,7 +720,8 @@ def run_unified_batch():
                         'success': False,
                         'error': str(e)
                     })
-        
+                    _record_outcome(userid, False, str(e))
+
         # Final summary
         logging.info(f"All {total_futures} futures completed. Summarizing results...")
 
@@ -743,4 +751,37 @@ def run_unified_batch():
 
 # Import this at the end to avoid circular imports
 import concurrent.futures
+from collections import Counter
 from resume_utils import get_resume_batch
+from db_connection import add_quarantined_userid
+
+# Track consecutive failures per userid across batches (continuous mode). Once a
+# userid hits QUARANTINE_THRESHOLD failures it is written to the quarantine log and
+# excluded from future fetches so a poison resume can't loop forever.
+QUARANTINE_THRESHOLD = 3
+_failure_counts = Counter()
+
+
+def _record_outcome(userid, success, error_msg=''):
+    """
+    Update per-userid failure tracking after each processing attempt.
+    On success, clear the counter (the resume recovered). On failure, increment
+    and — once the threshold is reached — quarantine the userid: write it to the
+    quarantine log and exclude it from future batch fetches so it stops looping.
+    """
+    if success:
+        _failure_counts.pop(userid, None)
+        return
+
+    _failure_counts[userid] += 1
+    count = _failure_counts[userid]
+    if count >= QUARANTINE_THRESHOLD:
+        add_quarantined_userid(userid)
+        get_error_logger().log_quarantine(
+            userid=str(userid),
+            failure_count=count,
+            last_error=error_msg or 'Unknown error'
+        )
+        logging.error(
+            f"UserID {userid} QUARANTINED after {count} failures - excluded from future batches"
+        )

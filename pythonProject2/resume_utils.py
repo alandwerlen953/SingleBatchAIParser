@@ -64,6 +64,12 @@ if api_key:
     masked_key = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "KEY_TOO_SHORT"
     logging.info(f"OpenAI API key successfully loaded: {masked_key}")
     openai.api_key = api_key
+    # Global safety caps so a hung network connection can never freeze a worker
+    # thread (and therefore the whole batch) indefinitely. Applies to every
+    # openai.*.create() call in the codebase. Individual calls may pass their own
+    # timeout to override this default.
+    openai.timeout = 90      # seconds, per attempt (socket-level hard cap)
+    openai.max_retries = 2   # SDK retries transient failures before raising
 else:
     logging.error("=" * 80)
     logging.error("CRITICAL ERROR: OPENAI_API_KEY is not set in the environment variables!")
