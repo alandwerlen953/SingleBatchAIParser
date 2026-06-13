@@ -1,6 +1,17 @@
 # Work Log
 
 ---
+## 2026-06-13 — Committed (42756c6)
+status: done
+
+Committed all freeze-fix + quarantine changes as 42756c6 on master
+("Add OpenAI timeout and quarantine poison resumes to stop batch freezes").
+5 files: db_connection.py, error_logger.py, resume_utils.py,
+single_step_processor.py, memory/work-log.md. Verified no circular import
+(single_step_processor imports add_quarantined_userid from db_connection at file
+bottom — imports cleanly). Next: push to origin/master.
+
+---
 ## 2026-06-13 — Quarantine implementation COMPLETE
 status: done
 
