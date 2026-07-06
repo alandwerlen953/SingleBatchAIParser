@@ -320,20 +320,33 @@ def main():
             # Choose the processing function based on the unified flag
             batch_function = run_unified_batch if args.unified else run_taxonomy_enhanced_batch
             processor_type = "unified single-step" if args.unified else "two-step"
-            
+
+            def run_no_file_step():
+                # Candidates with pasted resume text but no file attachment
+                # never reach aicandidate, so the parser can't see them.
+                # Upload a generated .docx resume so the normal pipeline
+                # ingests them. A failure here is logged, never blocks parsing.
+                try:
+                    from no_file_resume_uploader import run_no_file_backfill
+                    run_no_file_backfill()
+                except Exception as e:
+                    logging.error(f"No-file resume upload step failed: {e}")
+
             if args.continuous:
                 logging.info(f"Starting continuous {processor_type} batch processing (interval: {args.interval}s)")
-                
+
                 # Run continuously with the specified interval
                 while True:
                     logging.info(f"Starting {processor_type} batch run at {datetime.now()}")
+                    run_no_file_step()
                     batch_function()
-                    
+
                     logging.info(f"Batch completed. Waiting {args.interval} seconds until next run...")
                     time.sleep(args.interval)
             else:
                 # Run once
                 logging.info(f"Starting {processor_type} batch processing")
+                run_no_file_step()
                 batch_function()
                 logging.info(f"Batch processing completed")
     

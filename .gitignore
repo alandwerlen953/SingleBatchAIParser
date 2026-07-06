@@ -64,3 +64,5 @@ debug_*.log
 batch_input_*.jsonl
 pythonProject2/batch_input_*.jsonl
 unsuedfiles/batch_api/batch_input_*.jsonl
+# Audit copies of generated resume docs (no-file profile step)
+generated_resume_docs/
