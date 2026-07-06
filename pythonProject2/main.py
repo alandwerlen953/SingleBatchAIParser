@@ -57,7 +57,7 @@ def setup_parser():
     parser.add_argument('--quiet', action='store_true',
                        help='Suppress all logging output except errors')
     parser.add_argument('--batch-api', action='store_true',
-                       help='Use OpenAI Batch API for 50% cost savings (24hr processing)')
+                       help='Use OpenAI Batch API for 50%% cost savings (24hr processing)')
     parser.add_argument('--check-batch', type=str,
                        help='Check status of a specific batch job by ID')
     parser.add_argument('--submit-batch', action='store_true',
@@ -358,10 +358,22 @@ def main():
         sys.exit(1)
         
 if __name__ == "__main__":
+    exit_code = 0
     try:
         main()
+    except SystemExit as e:
+        # main() uses sys.exit() in several paths — preserve its code
+        exit_code = int(e.code) if isinstance(e.code, int) else (0 if e.code is None else 1)
     except Exception as e:
         logging.error(f"Fatal error in main: {str(e)}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
-        sys.exit(1)
+        exit_code = 1
+    # Hard close: a worker thread wedged in a network/SQL call is non-daemon,
+    # so a normal exit would block forever in the interpreter's thread join —
+    # leaving a zombie python.exe and a SQL Agent job stuck at "executing".
+    # os._exit() skips that join and terminates the process unconditionally.
+    logging.shutdown()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(exit_code)
