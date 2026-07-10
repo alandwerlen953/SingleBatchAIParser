@@ -276,7 +276,7 @@ def create_unified_prompt(resume_text, userid=None):
                       "- Zipcode(IMPORTANT: 5 digit zip only, no zip+4. If a zip code is explicitly on the resume use it. If you returned a City and State above, you MUST also provide a well-known zip code for that city - never return NULL for zip when City and State are populated. Only return NULL if both City and State above are also NULL. Do NOT infer a zip from job/company locations):\n"
                       "- Phone1:\n"
                       "- Phone2:\n"
-                      "- Email:\n"
+                      "- Email (IMPORTANT: Resumes often obfuscate emails to avoid scrapers. Reconstruct them into a real address of the form user@domain.tld. Convert spelled-out or spaced separators back to symbols: 'at'/'(at)'/'[at]'/' at ' becomes '@', and 'dot'/'(dot)'/'[dot]'/' dot ' becomes '.'. Remove spaces inside the address. For example 'Ricky at infosmarttech dot com' becomes 'ricky@infosmarttech.com' and 'john [dot] doe [at] gmail [dot] com' becomes 'john.doe@gmail.com'. Only return NULL if no email is present at all):\n"
                       "- Email2:\n"
                       "- LinkedIn:\n"
                       "- Certifications:\n"

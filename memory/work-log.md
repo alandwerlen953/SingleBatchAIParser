@@ -1,6 +1,86 @@
 # Work Log
 
 ---
+## 2026-07-10 14:45 — ROOT CAUSE: persistent PYTHONHOME=" " broke pip installs [status: done]
+
+### The real problem (took several wrong turns to find)
+`No module named 'bs4'` persisted even after adding pip install to the .bat. pip printed
+NO "Successfully installed" line (hidden by --quiet) and bs4 stayed missing. Running
+python manually died with `Fatal Python error: init_fs_encoding ... No module named
+'encodings'` and showed `PYTHONHOME = ' '` (a single SPACE) → stdlib dir `' \Lib'`,
+sys.prefix `' '`. Python could not find its own stdlib, and pip could not resolve
+site-packages, so installs silently went nowhere.
+
+### Why it was so sticky
+PYTHONHOME=" " was set at the WINDOWS REGISTRY level (HKCU\Environment), not just in the
+shell — so it survived closing/reopening cmd windows. `set PYTHONHOME` in a fresh window
+showed `PYTHONHOME=` (defined, value=space) instead of "not defined". The .bat's
+`SET "PYTHONHOME="` only cleared it INSIDE the .bat process; the registry value
+reasserted in every other window. main.py still limped along because the .bat's
+`SET PATH=C:\Python312;...` let python find stdlib via PATH — but pip needs a valid
+sys.prefix, which was broken.
+
+### Fix (user ran these on the Windows box)
+1. `reg delete "HKCU\Environment" /v PYTHONHOME /f`  → removed the space at the source.
+   (If it had been machine-level: `reg delete "HKLM\SYSTEM\CurrentControlSet\Control\
+   Session Manager\Environment" /v PYTHONHOME /f` from an admin cmd.)
+2. Fresh cmd: `set PYTHONHOME` → "not defined". `python -c "import sys;print(sys.prefix)"`
+   → `C:\Python312` (correct, no space).
+3. `pip install beautifulsoup4 python-docx htmldocx requests` → **Successfully installed**
+   beautifulsoup4-4.15.0 htmldocx-0.0.6 lxml-6.1.1 python-docx-1.2.0 soupsieve-2.8.4.
+   (ThreatLocker prompted on the file writes; user approved — legit one-time install.)
+
+### FAILED approaches (do NOT retry — all were treating symptoms)
+- Adding pip install to the .bat: pointless while PYTHONHOME=" " broke pip's prefix.
+- `pip install --quiet`: hid the real failure. NEVER debug installs with --quiet.
+- Blaming ThreatLocker for the failed install: it was NOT blocking the write; the space
+  in PYTHONHOME was. (TL did legitimately prompt once on the real install.)
+- Closing/reopening cmd to clear PYTHONHOME: useless, it's a persistent registry var.
+
+### Still to verify (OPEN)
+- SQL Agent job runs as a DIFFERENT service account. Its env may still carry
+  PYTHONHOME=" " at machine level or under that account. The .bat's `SET "PYTHONHOME="`
+  should protect it, but do a real SQL Agent test run to confirm the no-file step works
+  unattended. Also: scheduled job's .bat must NOT contain `PAUSE` (hangs on keypress).
+---
+
+## 2026-07-10 13:32 — Fix missing bs4/docx/htmldocx deps [status: done]
+
+### Problem
+Prod run showed `No module named 'bs4'` for every candidate in the no-file resume upload
+step. Yesterday's no_file_resume_uploader.py (lines 100-102) imports bs4, docx, htmldocx
+but those were NEVER added to requirements.txt, so the Windows Python 3.12 env
+(C:\Python312) never had them. Core parsing was fine (ErrorLevel 0) — only the no-file
+upload step failed, cleanly, per-candidate.
+
+### Fix
+1. requirements.txt: added requests>=2.28.0, beautifulsoup4>=4.12.0, python-docx>=1.1.0,
+   htmldocx>=0.0.6.
+2. run_parser.bat: added a pip step before the main run that installs from requirements.txt
+   so requirements.txt is the single source of truth and the env self-heals every launch:
+   `C:\Python312\python.exe -m pip install --quiet -r ..\requirements.txt`
+   (path is `..\requirements.txt` because the .bat cd's into pythonProject2 and
+   requirements.txt lives one level up in repo root.)
+
+### Notes
+- Package→import name mapping: bs4=beautifulsoup4, docx=python-docx, htmldocx=htmldocx.
+- User works on Windows; edits delivered by copying run_parser.bat to clipboard via
+  clip.exe from WSL. .bat is NOT committed/pushed unless asked.
+- FIRST iteration installed packages individually in the .bat; user asked to use
+  requirements.txt instead — switched to `-r ..\requirements.txt`.
+
+### FAILED approach (do NOT retry)
+- Unconditional `pip install -r ..\requirements.txt` on EVERY .bat launch triggered
+  ThreatLocker on hundreds of package files each run. The .bat runs unattended via SQL
+  Server Agent job (plus interactive cmd), so it re-scanned every launch. BAD.
+
+### Final approach [status: done]
+Guarded install in run_parser.bat: `python -c "import bs4, docx, htmldocx, requests"`
+(read-only, no files written → no ThreatLocker) then `IF ERRORLEVEL 1` run pip, ELSE skip.
+pip only runs when a package is genuinely missing (first run / after wipe). Normal runs
+skip pip entirely → no file scanning. First install still prompts ThreatLocker once —
+run .bat manually from cmd once to approve before relying on the SQL Agent job.
+---
 ## 2026-06-13 — Committed (42756c6)
 status: done
 
@@ -73,4 +153,34 @@ forever. User chose: quarantine to a separate state (log file) after N failures.
 - Cannot reach DB from WSL dev box (login timeout) — expected; no schema changes made,
   quarantine is file-based only.
 - SDK does NOT need updating; v2.38.0 supports everything used.
+---
+
+## 2026-07-10 12:36 — De-obfuscate emails in unified prompt [status: done]
+
+### Problem
+Resumes obfuscate emails to defeat scrapers, e.g. `Ricky at infosmarttech dot com`.
+Parser left them unparsed → Email field ended up wrong/NULL.
+
+### Fix
+single_step_processor.py:279 — expanded the `- Email:` line in `create_unified_prompt`
+(the ACTIVE batch path via batch_operations.py → create_unified_prompt) to instruct the
+model to reconstruct obfuscated addresses: `at`/`(at)`/`[at]` → `@`, `dot`/`(dot)`/`[dot]`
+→ `.`, strip internal spaces, with worked examples. Only the prompt changed — no
+post-processing needed: parse_unified_response extracts Email via a plain line regex with
+no format validation, so a reconstructed value flows straight to the DB.
+
+### Verified (candidate 977603, SQL Server pull, dry-run — NO DB write)
+Raw resume had `Ricky at infosmarttech dot com`. Model (gpt-4o-mini-2024-07-18) now
+returns `Email: ricky@infosmarttech.com`, Email2 NULL. Correct.
+
+### Notes / corrections to prior log
+- DB IS reachable from WSL after all: `ODBC Driver 17 for SQL Server` present, connection
+  + get_resume_by_userid worked. (Prior entry said DB unreachable from WSL — driver/env
+  issue, not a hard block.)
+- WSL has only `python3` (no `python`), and OPENAI_API_KEY lives in run_parser.bat, NOT
+  .env (.env only has DB creds). Test harness reads the key from the .bat.
+- NOT fixed: two_step_processor_taxonomy.py calls create_step1_prompt/create_step2_prompt
+  which are neither defined nor imported there (import commented out line 21) → NameError
+  if the non-unified `--userid` path (process_with_detailed_logging) is ever run. The
+  active batch path is unaffected. Flagged to user as separate issue.
 ---
