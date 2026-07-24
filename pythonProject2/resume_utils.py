@@ -3,6 +3,7 @@ Consolidated utilities for resume processing
 """
 
 import os
+import sys
 import logging
 import time
 import json

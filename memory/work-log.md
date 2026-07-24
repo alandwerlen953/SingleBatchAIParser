@@ -1,6 +1,13 @@
 # Work Log
 
 ---
+## 2026-07-10 16:36 — Committed (2d709e1) [status: done]
+Committed 3 files: single_step_processor.py (email de-obfuscation prompt),
+requirements.txt (bs4/docx/htmldocx/requests deps), memory/work-log.md.
+EXCLUDED run_parser.bat from the commit — it is untracked AND contains a plaintext
+OpenAI API key; never stage it. Push pending.
+---
+
 ## 2026-07-10 14:45 — ROOT CAUSE: persistent PYTHONHOME=" " broke pip installs [status: done]
 
 ### The real problem (took several wrong turns to find)
